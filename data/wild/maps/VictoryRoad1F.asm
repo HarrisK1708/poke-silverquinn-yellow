@@ -5,7 +5,7 @@ VictoryRoad1FWildMons:
 	db 36, GEODUDE
 	db 39, ZUBAT
 	db 44, ZUBAT
-	db 41, GEODUDE
+	db 41, HITMONLEE
 	db 43, ONIX
 	db 45, ONIX
 	db 41, GRAVELER
