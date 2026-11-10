@@ -397,6 +397,7 @@ ToggleableObjectStates:
 	toggle_object_state CERULEANCAVEB1F_ULTRA_BALL2, ON
 	toggle_object_state CERULEANCAVEB1F_MAX_REVIVE,  ON
 	toggle_object_state CERULEANCAVEB1F_MAX_ELIXER,  ON
+	toggle_object_state CERULEANCAVEB1F_MEW,         ON
 
 	toggleable_objects_for VICTORY_ROAD_1F
 	toggle_object_state VICTORYROAD1F_TM_SKY_ATTACK, ON

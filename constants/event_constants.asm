@@ -730,6 +730,7 @@
 	const_next $8C0
 	const_skip
 	const EVENT_BEAT_MEWTWO
+	const EVENT_BEAT_MEW
 
 ; Indigo Plateau events
 	const_next $8E0
