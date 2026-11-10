@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Find which of the 151 Pokédex species never appear in any wild encounter
+Find which of the NUM_POKEMON Pokédex species never appear in any wild encounter
 source in Pokémon Yellow:
 
   - grass/cave and surf tables   data/wild/maps/*.asm
@@ -74,12 +74,13 @@ def load_dex():
 
 
 def load_pokemon():
-    """Return (dex_order_list, species_set, internal_ids, aliases). Asserts 151."""
+    """Return (dex_order_list, species_set, internal_ids, aliases).
+    Asserts every DEX_* constant (NUM_POKEMON of them) maps to exactly one internal id."""
     ids, aliases = load_species()
     dex = load_dex()
     dexset = set(dex)
     real = [s for s in ids if s in dexset]
-    assert len(real) == 151, f"expected 151 real species, got {len(real)}"
+    assert len(real) == len(dex), f"expected {len(dex)} (NUM_POKEMON) real species, got {len(real)}"
     assert set(real) == dexset, f"mismatch: {set(real) ^ dexset}"
     return dex, set(real), ids, aliases
 

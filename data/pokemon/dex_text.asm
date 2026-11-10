@@ -1506,3 +1506,36 @@ _MewDexEntry::
 	next "fine, delicate"
 	next "hair can be seen"
 	dex
+
+; TODO(dex): PLACEHOLDER text for SILVER; replace before release.
+_SilverDexEntry::
+	text "TODO: real dex"
+	next "entry for"
+	next "SILVER."
+
+	page "Placeholder text,"
+	next "do not ship."
+	next "Size is TODO too"
+	dex
+
+; TODO(dex): PLACEHOLDER text for QUINN; replace before release.
+_QuinnDexEntry::
+	text "TODO: real dex"
+	next "entry for"
+	next "QUINN."
+
+	page "Placeholder text,"
+	next "do not ship."
+	next "Size is TODO too"
+	dex
+
+; TODO(dex): PLACEHOLDER text for RAYA; replace before release.
+_RayaDexEntry::
+	text "TODO: real dex"
+	next "entry for"
+	next "RAYA."
+
+	page "Placeholder text,"
+	next "do not ship."
+	next "Size is TODO too"
+	dex

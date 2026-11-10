@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compute which of the 151 species are obtainable in Pokémon Yellow on a single
+Compute which of the NUM_POKEMON species are obtainable in Pokémon Yellow on a single
 cartridge, and list every species with no obtaining path.
 
 Sources (all parsed from the repo):
@@ -941,8 +941,8 @@ def main():
         return f"#{dex.index(s) + 1:03d} {s}"
 
     print("\n=== Summary ===")
-    print(f"  Obtainable across playthroughs (no link trades): {len(obtainable)}/151")
-    print(f"  SINGLE-SAVE obtainable (no link trades):         {len(single_save)}/151")
+    print(f"  Obtainable across playthroughs (no link trades): {len(obtainable)}/{len(dex)}")
+    print(f"  SINGLE-SAVE obtainable (no link trades):         {len(single_save)}/{len(dex)}")
     print(f"      choices taken for the count: {', '.join(sorted(chosen))} "
           + ("(every combination gives the same total)" if len(combo_sizes) == 1 else
              f"(best of {len(combo_sizes)} distinct totals: {sorted(combo_sizes)})"))
@@ -954,7 +954,7 @@ def main():
     no_path = [s for s in unobtainable if s not in trade_evo_only and s not in excluded]
     trade_only = [s for s in unobtainable if s in trade_evo_only]
     excl = [s for s in unobtainable if s in excluded]
-    assert len(no_path) + len(trade_only) + len(excl) == len(unobtainable) == 151 - len(single_save)
+    assert len(no_path) + len(trade_only) + len(excl) == len(unobtainable) == len(dex) - len(single_save)
 
     print(f"\n=== Not obtainable in a single save ({len(unobtainable)}) ===")
     print(f"\n  (a) No path at all ({len(no_path)})")

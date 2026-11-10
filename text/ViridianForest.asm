@@ -155,3 +155,7 @@ _ViridianForestLeavingSignText::
 	line "VIRIDIAN FOREST"
 	cont "PEWTER CITY AHEAD"
 	done
+
+_QuinnBattleText::
+	text "Quinn!@"
+	text_end

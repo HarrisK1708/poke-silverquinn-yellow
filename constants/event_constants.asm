@@ -541,6 +541,7 @@
 	const EVENT_BEAT_VIRIDIAN_FOREST_TRAINER_2
 	const EVENT_BEAT_VIRIDIAN_FOREST_TRAINER_3
 	const EVENT_BEAT_VIRIDIAN_FOREST_TRAINER_4
+	const EVENT_BEAT_QUINN
 
 ; Mt. Moon events
 	const_next $570
@@ -731,6 +732,7 @@
 	const_skip
 	const EVENT_BEAT_MEWTWO
 	const EVENT_BEAT_MEW
+	const EVENT_BEAT_RAYA
 
 ; Indigo Plateau events
 	const_next $8E0
@@ -777,6 +779,7 @@ DEF INDIGO_PLATEAU_EVENTS_END EQU const_value - 1
 	const EVENT_BEAT_ROCK_TUNNEL_2_TRAINER_5
 	const EVENT_BEAT_ROCK_TUNNEL_2_TRAINER_6
 	const EVENT_BEAT_ROCK_TUNNEL_2_TRAINER_7
+	const EVENT_BEAT_SILVER
 
 ; Seafoam Islands events
 	const_next $9C0

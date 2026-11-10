@@ -151,4 +151,7 @@ MonPartyData:
 	nybble ICON_SNAKE     ; Dragonite
 	nybble ICON_MON       ; Mewtwo
 	nybble ICON_MON       ; Mew
+	nybble ICON_QUADRUPED ; Silver
+	nybble ICON_QUADRUPED ; Quinn
+	nybble ICON_QUADRUPED ; Raya
 	end_nybble_array NUM_POKEMON

@@ -5,3 +5,7 @@ _MewtwoBattleText::
 _MewBattleText::
 	text "Mew!@"
 	text_end
+
+_RayaBattleText::
+	text "Raya!@"
+	text_end

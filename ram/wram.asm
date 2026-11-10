@@ -1991,7 +1991,8 @@ wSpriteSetID:: db
 
 wObjectDataPointerTemp:: dw
 
-	ds 2
+; (2 unused bytes were here; they now pay for wPokedexOwned/wPokedexSeen
+; growing from 151 to 154 bits, keeping WRAM0 within its fixed Stack org)
 
 ; the tile shown outside the boundaries of the map
 wMapBackgroundTile:: db

@@ -60,9 +60,9 @@ PokedexEntryPointers:
 	dw SeelDexEntry
 	dw DiglettDexEntry
 	dw TaurosDexEntry
-	dw MissingNoDexEntry
-	dw MissingNoDexEntry
-	dw MissingNoDexEntry
+	dw SilverDexEntry
+	dw QuinnDexEntry
+	dw RayaDexEntry
 	dw FarfetchdDexEntry
 	dw VenonatDexEntry
 	dw DragoniteDexEntry
@@ -1252,6 +1252,33 @@ MewDexEntry:
 	db 1,4
 	dw 90
 	text_far _MewDexEntry
+	text_end
+
+; TODO(dex): PLACEHOLDER category/height/weight/text for SILVER --
+; replace with the real entry before release (grep "TODO(dex)").
+SilverDexEntry:
+	db "TODO@"
+	db 1,1
+	dw 111
+	text_far _SilverDexEntry
+	text_end
+
+; TODO(dex): PLACEHOLDER category/height/weight/text for QUINN --
+; replace with the real entry before release (grep "TODO(dex)").
+QuinnDexEntry:
+	db "TODO@"
+	db 1,1
+	dw 111
+	text_far _QuinnDexEntry
+	text_end
+
+; TODO(dex): PLACEHOLDER category/height/weight/text for RAYA --
+; replace with the real entry before release (grep "TODO(dex)").
+RayaDexEntry:
+	db "TODO@"
+	db 1,1
+	dw 111
+	text_far _RayaDexEntry
 	text_end
 
 MissingNoDexEntry:

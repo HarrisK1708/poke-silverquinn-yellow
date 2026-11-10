@@ -15,11 +15,17 @@ UncompressMonSprite::
 ; $4A ≤ index < $74:       bank $B ("Pics 3")
 ; $74 ≤ index < $99:       bank $C ("Pics 4")
 ; $99 ≤ index:             bank $D ("Pics 5")
+; SILVER ≤ index ≤ RAYA:    "Pics 8" (checked right after FOSSIL_KABUTOPS)
 	ld a, [wCurPartySpecies]
 	ld b, a
 	cp FOSSIL_KABUTOPS
 	ld a, BANK(FossilKabutopsPic)
 	jr z, .GotBank
+	ld a, b
+	sub SILVER
+	cp RAYA - SILVER + 1
+	ld a, BANK("Pics 8")
+	jr c, .GotBank
 	ld a, b
 	cp TANGELA + 1
 	ld a, BANK("Pics 1")

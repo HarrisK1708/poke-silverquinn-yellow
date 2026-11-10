@@ -152,4 +152,7 @@ MonsterPalettes:
 	db PAL_BROWNMON  ; DRAGONITE
 	db PAL_MEWMON    ; MEWTWO
 	db PAL_MEWMON    ; MEW
+	db PAL_BROWNMON  ; SILVER ; TODO(art): placeholder
+	db PAL_GREENMON  ; QUINN  ; TODO(art): placeholder
+	db PAL_BLUEMON   ; RAYA   ; TODO(art): placeholder
 	assert_table_length NUM_POKEMON + 1

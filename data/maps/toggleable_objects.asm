@@ -218,6 +218,7 @@ ToggleableObjectStates:
 	toggle_object_state VIRIDIANFOREST_POTION1,   ON
 	toggle_object_state VIRIDIANFOREST_POTION2,   ON
 	toggle_object_state VIRIDIANFOREST_POKE_BALL, ON
+	toggle_object_state VIRIDIANFOREST_QUINN,     ON
 
 	toggleable_objects_for MT_MOON_1F
 	toggle_object_state MTMOON1F_POTION1,      ON
@@ -398,6 +399,7 @@ ToggleableObjectStates:
 	toggle_object_state CERULEANCAVEB1F_MAX_REVIVE,  ON
 	toggle_object_state CERULEANCAVEB1F_MAX_ELIXER,  ON
 	toggle_object_state CERULEANCAVEB1F_MEW,         ON
+	toggle_object_state CERULEANCAVEB1F_RAYA,        ON
 
 	toggleable_objects_for VICTORY_ROAD_1F
 	toggle_object_state VICTORYROAD1F_TM_SKY_ATTACK, ON
@@ -433,6 +435,10 @@ ToggleableObjectStates:
 	db BLUES_HOUSE, BLUESHOUSE_DAISY1,   ON
 	db BLUES_HOUSE, BLUESHOUSE_DAISY2,   OFF
 	db BLUES_HOUSE, BLUESHOUSE_TOWN_MAP, ON
+
+; appended after everything else so no earlier toggle index shifts
+	toggleable_objects_for ROCK_TUNNEL_B1F
+	toggle_object_state ROCKTUNNELB1F_SILVER, ON
 
 	assert_table_length NUM_TOGGLEABLE_OBJECTS
 

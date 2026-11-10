@@ -81,15 +81,8 @@ DrawHPBar::
 LoadMonData::
 	jpfar LoadMonData_
 
-OverwritewMoves::
-; Write c to [wMoves + b]. Unused.
-	ld hl, wMoves
-	ld e, b
-	ld d, 0
-	add hl, de
-	ld a, c
-	ld [hl], a
-	ret
+; (OverwritewMoves, unreferenced, was removed to give ROM0 room for the
+; "Pics 8" bank check in UncompressMonSprite)
 
 LoadFlippedFrontSpriteByMonIndex::
 	ld a, 1
@@ -110,7 +103,7 @@ LoadFrontSpriteByMonIndex::
 	pop hl
 	jr z, .invalidDexNumber ; dex #0 invalid
 	cp NUM_POKEMON + 1
-	jr c, .validDexNumber   ; dex >#151 invalid
+	jr c, .validDexNumber   ; dex >NUM_POKEMON invalid
 .invalidDexNumber
 	; This is the so-called "Rhydon trap" or "Rhydon glitch"
 	; to fail-safe invalid dex numbers
