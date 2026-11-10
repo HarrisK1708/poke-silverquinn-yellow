@@ -51,48 +51,6 @@ MEW_XY = (20, 1)          # object_event in data/maps/objects/CeruleanCaveB1F.as
 STAND_XY = (20, 2)        # tile directly below Mew; player faces UP
 
 
-def eval_const_expr(s):
-    s = s.strip()
-    return eval(re.sub(r"\$([0-9A-Fa-f]+)", r"0x\1", s), {"__builtins__": {}})
-
-
-def event_value(name):
-    """Evaluate constants/event_constants.asm (const_def/const/const_skip/const_next)."""
-    v = 0
-    for c in ve.lines("constants/event_constants.asm"):
-        if re.match(r"const_def$", c):
-            v = 0
-            continue
-        m = re.match(r"const_next\s+(.+)$", c)
-        if m:
-            v = eval_const_expr(m.group(1))
-            continue
-        m = re.match(r"const_skip(?:\s+(.+))?$", c)
-        if m:
-            v += eval_const_expr(m.group(1)) if m.group(1) else 1
-            continue
-        m = re.match(r"const\s+(\w+)$", c)
-        if m:
-            if m.group(1) == name:
-                return v
-            v += 1
-    raise KeyError(name)
-
-
-def map_info(name):
-    """(map id, width in blocks) from map_const lines in constants/map_constants.asm."""
-    v = 0
-    for c in ve.lines("constants/map_constants.asm"):
-        if c == "const_def":
-            v = 0
-        m = re.match(r"map_const\s+(\w+)\s*,\s*(\d+)\s*,\s*(\d+)$", c)
-        if m:
-            if m.group(1) == name:
-                return v, int(m.group(2))
-            v += 1
-    raise KeyError(name)
-
-
 def mew_object():
     for c in ve.lines("data/maps/objects/CeruleanCaveB1F.asm"):
         m = re.match(r"object_event\s+(\d+),\s*(\d+),\s*(\w+),.*,\s*TEXT_CERULEANCAVEB1F_MEW,\s*(\w+),\s*(\d+)$", c)
@@ -157,14 +115,14 @@ def main():
                       if k.startswith("GROWTH_")})
     MEW = consts["species"]["MEW"]
     DEX_MEW = ve.load_consts("constants/pokedex_constants.asm")["DEX_MEW"]
-    EVENT_BEAT_MEW = event_value("EVENT_BEAT_MEW")
+    EVENT_BEAT_MEW = ve.load_consts("constants/event_constants.asm")["EVENT_BEAT_MEW"]
     TOGGLE_MEW = ve.load_consts("constants/toggle_constants.asm")["TOGGLE_MEW"]
-    b1f_id, b1f_w = map_info("CERULEAN_CAVE_B1F")
+    b1f_id = ve.load_consts("constants/map_constants.asm")["CERULEAN_CAVE_B1F"]
+    b1f_w = ve.map_width("CERULEAN_CAVE_B1F")
     (ox, oy), sprite, obj_species, obj_level = mew_object()
     assert (ox, oy) == MEW_XY and obj_species == "MEW", ((ox, oy), obj_species)
     sx, sy = STAND_XY
 
-    # wild battle text uses the species' display name
     view_ptr = sym["wOverworldMap"] + 7 + b1f_w + (b1f_w + 6) * (sy >> 1) + (sx >> 1)  # event_displacement
 
     print("RAM addresses (from %s):" % os.path.relpath(sym_path, ROOT))

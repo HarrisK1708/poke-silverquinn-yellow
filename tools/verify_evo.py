@@ -60,26 +60,34 @@ def lines(rel):
         return [l.split(";", 1)[0].strip() for l in f]
 
 
-def load_sym(path):
+def load_sym(path, banked=False):
+    """name -> address from an rgblink .sym file; with banked=True, name -> (bank, address)."""
     sym = {}
     with open(path, encoding="utf-8") as f:
         for l in f:
             m = re.match(r"([0-9a-fA-F]+):([0-9a-fA-F]+)\s+(\S+)$", l.strip())
             if m:
-                sym[m.group(3)] = int(m.group(2), 16)
+                bank, addr = int(m.group(1), 16), int(m.group(2), 16)
+                sym[m.group(3)] = (bank, addr) if banked else addr
     return sym
 
 
 def parse_num(s):
-    s = s.strip()
-    return int(s[1:], 16) if s.startswith("$") else int(s)
+    """Evaluate a simple rgbasm numeric expression: $hex / %bin / decimal literals
+    combined with + - * / ( ). Raises ValueError on anything else."""
+    expr = re.sub(r"\$([0-9A-Fa-f]+)", r"0x\1", s.strip())
+    expr = re.sub(r"%([01]+)", r"0b\1", expr)
+    if not re.fullmatch(r"[0-9a-fA-FxXbB+\-*/() ]+", expr):
+        raise ValueError(f"unsupported constant expression: {s!r}")
+    return int(eval(expr.replace("/", "//"), {"__builtins__": {}}))
 
 
 def load_consts(rel):
-    """Evaluate const_def / const / const_skip / const_next / map_const / dw_const."""
+    """Evaluate const_def / const / const_skip / const_next / map_const / dw_const,
+    including expression arguments (e.g. `const_next $F0 - 2`)."""
     out, value, inc = {}, 0, 1
     for c in lines(rel):
-        m = re.match(r"const_def(?:\s+(\S+?)(?:\s*,\s*(\S+))?)?$", c)
+        m = re.match(r"const_def(?:\s+([^,]+?)(?:\s*,\s*(.+))?)?$", c)
         if m:
             value = parse_num(m.group(1)) if m.group(1) else 0
             inc = parse_num(m.group(2)) if m.group(2) else 1
@@ -89,14 +97,42 @@ def load_consts(rel):
             out[m.group(1)] = value
             value += inc
             continue
-        m = re.match(r"const_skip(?:\s+(\S+))?$", c)
+        m = re.match(r"const_skip(?:\s+(.+))?$", c)
         if m:
             value += inc * (parse_num(m.group(1)) if m.group(1) else 1)
             continue
-        m = re.match(r"const_next\s+(\S+)$", c)
+        m = re.match(r"const_next\s+(.+)$", c)
         if m:
             value = parse_num(m.group(1))
     return out
+
+
+def def_value(rel, name):
+    """Value of `DEF name EQU <expr>` in a constants file."""
+    for c in lines(rel):
+        m = re.match(rf"DEF\s+{re.escape(name)}\s+EQU\s+(.+)$", c)
+        if m:
+            return parse_num(m.group(1))
+    raise KeyError(f"{name} not defined in {rel}")
+
+
+def map_width(name):
+    """Width in blocks from `map_const NAME, width, height` (constants/map_constants.asm)."""
+    for c in lines("constants/map_constants.asm"):
+        m = re.match(r"map_const\s+(\w+)\s*,\s*(\d+)\s*,\s*(\d+)$", c)
+        if m and m.group(1) == name:
+            return int(m.group(2))
+    raise KeyError(name)
+
+
+def base_catch_rate(name):
+    """Species base catch rate from data/pokemon/base_stats/<name>.asm (`db N ; catch rate`)."""
+    with open(os.path.join(ROOT, f"data/pokemon/base_stats/{name.lower()}.asm"), encoding="utf-8") as f:
+        for l in f:
+            m = re.match(r"\s*db\s+(\d+)\s*;\s*catch rate", l)
+            if m:
+                return int(m.group(1))
+    raise ValueError(f"no catch rate in base_stats/{name.lower()}.asm")
 
 
 def load_base_stats(name):

@@ -40,6 +40,10 @@ IF DEF(_DEBUG)
 	ld hl, wPartyMon4Moves + 2
 	ld [hl], a
 
+	; Mark Pikachu as the starter, like OaksLab does (see IsThisMonStarterPikachu).
+	ld a, LIGHT_BALL_GSC
+	ld [wPartyMon4CatchRate], a
+
 	; Snorlax gets four HM moves.
 	ld hl, wPartyMon1Moves
 	ld a, FLY

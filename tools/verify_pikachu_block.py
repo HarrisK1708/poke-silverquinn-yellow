@@ -50,36 +50,9 @@ def item_name(item_id):
     return names[item_id - 1]
 
 
-def base_catch_rate(name):
-    with open(os.path.join(ROOT, f"data/pokemon/base_stats/{name.lower()}.asm"), encoding="utf-8") as f:
-        for l in f:
-            m = re.match(r"\s*db\s+(\d+)\s*;\s*catch rate", l)
-            if m:
-                return int(m.group(1))
-    raise ValueError(f"no catch rate for {name}")
-
-
-def light_ball_value():
-    for c in ve.lines("constants/item_constants.asm"):
-        m = re.match(r"DEF\s+LIGHT_BALL_GSC\s+EQU\s+(\S+)$", c)
-        if m:
-            return ve.parse_num(m.group(1))
-    raise ValueError("LIGHT_BALL_GSC not defined")
-
-
 def rom_offset(sym_entry):
     bank, addr = sym_entry
     return bank * 0x4000 + (addr - 0x4000) if bank else addr
-
-
-def load_sym_banked(path):
-    out = {}
-    with open(path, encoding="utf-8") as f:
-        for l in f:
-            m = re.match(r"([0-9a-fA-F]+):([0-9a-fA-F]+)\s+(\S+)$", l.strip())
-            if m:
-                out[m.group(3)] = (int(m.group(1), 16), int(m.group(2), 16))
-    return out
 
 
 def patch_out_catch_rate_check(rom_bytes, sym_banked, lb):
@@ -207,7 +180,7 @@ def main():
 
     sym_path = args.sym or os.path.splitext(args.rom)[0] + ".sym"
     sym = ve.load_sym(sym_path)
-    banked = load_sym_banked(sym_path)
+    banked = ve.load_sym(sym_path, banked=True)
     need = ["wPartyMon1CatchRate", "wPartyMon1OTID", "wPlayerID", "wPartyMon1Species",
             "wPartySpecies", "IsStarterPikachuAliveInOurParty", "IsThisMonStarterPikachu"]
     missing = [n for n in need if n not in sym]
@@ -219,7 +192,8 @@ def main():
     ve.MOVES.update(ve.load_consts("constants/move_constants.asm"))
     ve.GROWTH.update({k: v for k, v in ve.load_consts("constants/pokemon_data_constants.asm").items()
                       if k.startswith("GROWTH_")})
-    lb, base = light_ball_value(), base_catch_rate("PIKACHU")
+    lb = ve.def_value("constants/item_constants.asm", "LIGHT_BALL_GSC")
+    base = ve.base_catch_rate("PIKACHU")
     assert lb != base, "LIGHT_BALL_GSC equals PIKACHU's base catch rate; cases would be identical"
 
     print("RAM addresses (from %s):" % os.path.relpath(sym_path, ROOT))

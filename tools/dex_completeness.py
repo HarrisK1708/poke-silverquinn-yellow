@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from find_nonwild import (  # noqa: E402
     ROOT, all_wild, load_pokemon, read_lines, strip_comment,
 )
+from verify_evo import base_catch_rate, def_value  # noqa: E402  (shared asm parsers)
 
 STARTER_GIFTS = ("BULBASAUR", "CHARMANDER", "SQUIRTLE")
 TUTORIAL_BATTLE_TYPES = ("BATTLE_TYPE_OLD_MAN", "BATTLE_TYPE_PIKACHU")
@@ -501,11 +502,6 @@ def verify_fossils(gifts, aliases, species):
     return "Mt. Moon fossil", options, evidence
 
 
-def parse_num(s):
-    s = s.strip()
-    return int(s[1:], 16) if s.startswith("$") else int(s)
-
-
 def find_seq(lines, start, end, patterns):
     """Find each regex in `patterns` in order within lines[start:end] (gaps allowed).
     Returns the matching line indexes, or None if the sequence is not present."""
@@ -629,30 +625,46 @@ def verify_starter_stone_block(aliases, species, trades_used, evos, paths):
         f"(:{scan[4] + 1}) and continues past non-marked Pikachu")
 
     # --- which Pikachu carry the mark? ---
-    light_ball = None
-    for c in code_lines("constants/item_constants.asm"):
-        m = re.match(r"DEF\s+LIGHT_BALL_GSC\s+EQU\s+(\S+)$", c)
-        if m:
-            light_ball = parse_num(m.group(1))
+    try:
+        light_ball = def_value("constants/item_constants.asm", "LIGHT_BALL_GSC")
+    except KeyError:
+        light_ball = None
     check(light_ball is not None, "LIGHT_BALL_GSC not defined in item_constants.asm")
-    base_rate = None
-    for l in read_lines(f"data/pokemon/base_stats/{starter.lower()}.asm"):
-        m = re.match(r"\s*db\s+(\d+)\s*;\s*catch rate", l)
-        if m:
-            base_rate = int(m.group(1))
+    try:
+        base_rate = base_catch_rate(starter)
+    except ValueError:
+        base_rate = None
     check(base_rate is not None, f"no catch rate in base_stats/{starter.lower()}.asm")
     check(base_rate != light_ball,
           f"{starter}'s base catch rate equals LIGHT_BALL_GSC (${light_ball:02X}); "
           f"wild/gift {starter} would look like the starter")
     # Code that writes LIGHT_BALL_GSC into a mon's catch-rate byte (expected: OaksLab only)
+    # Only release-build code counts: skip anything inside IF DEF(_DEBUG) (e.g. the debug
+    # new-game party in engine/debug/debug_party.asm, which also marks its Pikachu).
+    def release_lines(path):
+        ls, debug_stack, out = code_lines(path), [], []
+        for i, c in enumerate(ls):
+            if re.match(r"IF\s+DEF\(_DEBUG\)$", c):
+                debug_stack.append(True)
+            elif re.match(r"IF\b", c):
+                debug_stack.append(False)
+            elif c == "ELSE" and debug_stack:
+                debug_stack[-1] = not debug_stack[-1] if debug_stack[-1] else False
+            elif c == "ENDC" and debug_stack:
+                debug_stack.pop()
+            elif not any(debug_stack):
+                out.append((i, c))
+        return out
+
     writers = []
     for fn in script_files() + sorted(glob.glob(os.path.join(ROOT, "engine", "**", "*.asm"), recursive=True)):
-        ls = code_lines(rel(fn))
-        for i, c in enumerate(ls[:-1]):
+        rl = release_lines(rel(fn))
+        for (i, c), (_, nxt) in zip(rl, rl[1:]):
             if re.match(r"ld\s+a\s*,\s*LIGHT_BALL_GSC$", c) and \
-                    re.match(r"ld\s+\[w\w*CatchRate\]\s*,\s*a$", ls[i + 1]):
+                    re.match(r"ld\s+\[w\w*CatchRate\]\s*,\s*a$", nxt):
                 writers.append((rel(fn), i + 1))
-    check(writers, "nothing writes LIGHT_BALL_GSC to a catch-rate byte; the starter is unmarked")
+    check(writers, "nothing in the release build writes LIGHT_BALL_GSC to a catch-rate byte; "
+                   "the starter is unmarked")
 
     def marked(detail):
         # a source is the marked starter if a LIGHT_BALL_GSC write follows it closely in the same file
@@ -660,6 +672,11 @@ def verify_starter_stone_block(aliases, species, trades_used, evos, paths):
         return bool(m) and any(f == m.group(1) and 0 <= n - int(m.group(2)) <= 5 for f, n in writers)
 
     srcs = paths[starter]
+    starter_gifts = [d for s, d in srcs if s == "gift" and d.startswith("starter")]
+    check(starter_gifts, f"no starter gift of {starter} found")
+    check(all(marked(d) for d in starter_gifts),
+          f"the starter gift ({'; '.join(starter_gifts)}) is not followed by a LIGHT_BALL_GSC "
+          f"catch-rate write, so the follower would be unmarked")
     unmarked = [f"{s}: {d}" for s, d in srcs if not marked(d)]
     evidence.append(
         f"LIGHT_BALL_GSC (${light_ball:02X}) written only at "
