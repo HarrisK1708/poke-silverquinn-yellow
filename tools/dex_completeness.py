@@ -501,6 +501,11 @@ def verify_fossils(gifts, aliases, species):
     return "Mt. Moon fossil", options, evidence
 
 
+def parse_num(s):
+    s = s.strip()
+    return int(s[1:], 16) if s.startswith("$") else int(s)
+
+
 def find_seq(lines, start, end, patterns):
     """Find each regex in `patterns` in order within lines[start:end] (gaps allowed).
     Returns the matching line indexes, or None if the sequence is not present."""
@@ -515,18 +520,22 @@ def find_seq(lines, start, end, patterns):
     return out
 
 
-def verify_starter_stone_block(aliases, species, trades_used, evos):
+def verify_starter_stone_block(aliases, species, trades_used, evos, paths):
     """Yellow refuses stone evolution for the player's own starter Pikachu.
 
     Verifies, from the code:
       - ItemUseEvoStone calls IsThisPartyMonStarterPikachu after
         CheckEvolveWithUsedStone; on carry it prints RefusingText and jumps to
         .canceledItemUse, and only the not-starter branch reaches the evolution.
-      - The predicate returns carry only if species == STARTER AND OT ID ==
-        wPlayerID (both bytes) AND OT name == wPlayerName.
-    On a single cartridge every obtainable mon of the STARTER species carries the
-    player's OT unless an in-game NPC trade hands one out, so if no trade does,
-    every item evolution out of STARTER is blocked for a single save.
+      - The predicate returns carry only if species == STARTER AND catch rate ==
+        LIGHT_BALL_GSC AND OT ID == wPlayerID (both bytes) AND OT name ==
+        wPlayerName, and the follower scan (IsStarterPikachuAliveInOurParty)
+        applies the same LIGHT_BALL_GSC check (step 2b; both are required).
+      - LIGHT_BALL_GSC is written only to the Oak's Lab starter, and the STARTER
+        species' base catch rate differs from it.
+    So the block only stops the marked starter: if any other STARTER-species
+    source exists (wild, gift, ...; base catch rate), that mon can stone-evolve.
+    Only if the marked starter is the sole source is the evolution blocked.
 
     Returns ({(from, to): reason}, evidence). Raises VerifyError if the block is gone.
     """
@@ -584,29 +593,95 @@ def verify_starter_stone_block(aliases, species, trades_used, evos):
         r"cp\s+\[hl\]$", r"jr\s+z\s*,\s*\.loop$"])
     result = find_seq(ps, p0, p1, [r"\.notPlayerPikachu$", r"and\s+a$", r"ret$",
                                    r"\.isPlayerPikachu$", r"scf$", r"ret$"])
+    # 4th condition (step 2b): catch-rate byte must be LIGHT_BALL_GSC, the mark
+    # OaksLab puts on the starter. Required here AND in the follower's party scan.
+    cond_catch = find_seq(ps, p0, p1, [
+        r"cp\s+STARTER$", fail, r"ld\s+bc\s*,\s*MON_CATCH_RATE$", r"add\s+hl\s*,\s*bc$",
+        r"ld\s+a\s*,\s*\[hl\]$", r"cp\s+LIGHT_BALL_GSC$", fail])
     check(cond_species, "predicate no longer requires species == STARTER")
+    check(cond_catch, "predicate does not require catch rate == LIGHT_BALL_GSC "
+                      "(the step-2b starter marker)")
     check(cond_id, "predicate no longer compares both bytes of OT ID against wPlayerID")
     check(cond_name, "predicate no longer compares OT name (wPartyMonOT) against wPlayerName")
     check(result, "predicate no longer returns carry only on .isPlayerPikachu")
     check(cond_species[0] < cond_id[1] < cond_name[1],
           "predicate conditions are not checked in sequence (species, OT ID, OT name)")
+
+    # IsStarterPikachuAliveInOurParty (the follower's scan) must use the same marker,
+    # skipping non-marked mons and continuing the scan.
+    check("IsStarterPikachuAliveInOurParty::" in ps, "IsStarterPikachuAliveInOurParty not found")
+    a0 = ps.index("IsStarterPikachuAliveInOurParty::")
+    a1 = a0 + 1
+    while a1 < len(ps) and not re.match(r"[A-Za-z_]\w*::?$", ps[a1]):
+        a1 += 1
+    scan = find_seq(ps, a0, a1, [
+        r"\.sameOT$", r"ld\s+hl\s*,\s*MON_CATCH_RATE\s*-\s*MON_OTID$", r"add\s+hl\s*,\s*de$",
+        r"ld\s+a\s*,\s*\[hl\]$", r"cp\s+LIGHT_BALL_GSC$", r"jr\s+nz\s*,\s*\.curMonNotPlayerPikachu$"])
+    check(scan, "IsStarterPikachuAliveInOurParty does not require catch rate == LIGHT_BALL_GSC; "
+                "follower and stone refusal could resolve to different Pikachu")
     evidence.append(
         f"pikachu_status.asm:{p0 + 1}: carry iff species == STARTER ({starter}) (:{cond_species[0] + 1}) "
+        f"AND catch rate == LIGHT_BALL_GSC (:{cond_catch[5] + 1}) "
         f"AND OT ID == wPlayerID (:{cond_id[1] + 1},{cond_id[4] + 1}) "
         f"AND OT name == wPlayerName (:{cond_name[1] + 1}); any mismatch -> .notPlayerPikachu")
+    evidence.append(
+        f"pikachu_status.asm:{a0 + 1}: follower scan applies the same LIGHT_BALL_GSC check "
+        f"(:{scan[4] + 1}) and continues past non-marked Pikachu")
 
-    # --- single-cartridge OT argument ---
-    foreign = [(get, where) for get, where, _, _ in trades_used if get == starter]
+    # --- which Pikachu carry the mark? ---
+    light_ball = None
+    for c in code_lines("constants/item_constants.asm"):
+        m = re.match(r"DEF\s+LIGHT_BALL_GSC\s+EQU\s+(\S+)$", c)
+        if m:
+            light_ball = parse_num(m.group(1))
+    check(light_ball is not None, "LIGHT_BALL_GSC not defined in item_constants.asm")
+    base_rate = None
+    for l in read_lines(f"data/pokemon/base_stats/{starter.lower()}.asm"):
+        m = re.match(r"\s*db\s+(\d+)\s*;\s*catch rate", l)
+        if m:
+            base_rate = int(m.group(1))
+    check(base_rate is not None, f"no catch rate in base_stats/{starter.lower()}.asm")
+    check(base_rate != light_ball,
+          f"{starter}'s base catch rate equals LIGHT_BALL_GSC (${light_ball:02X}); "
+          f"wild/gift {starter} would look like the starter")
+    # Code that writes LIGHT_BALL_GSC into a mon's catch-rate byte (expected: OaksLab only)
+    writers = []
+    for fn in script_files() + sorted(glob.glob(os.path.join(ROOT, "engine", "**", "*.asm"), recursive=True)):
+        ls = code_lines(rel(fn))
+        for i, c in enumerate(ls[:-1]):
+            if re.match(r"ld\s+a\s*,\s*LIGHT_BALL_GSC$", c) and \
+                    re.match(r"ld\s+\[w\w*CatchRate\]\s*,\s*a$", ls[i + 1]):
+                writers.append((rel(fn), i + 1))
+    check(writers, "nothing writes LIGHT_BALL_GSC to a catch-rate byte; the starter is unmarked")
+
+    def marked(detail):
+        # a source is the marked starter if a LIGHT_BALL_GSC write follows it closely in the same file
+        m = re.search(r"@ (\S+):(\d+)$", detail)
+        return bool(m) and any(f == m.group(1) and 0 <= n - int(m.group(2)) <= 5 for f, n in writers)
+
+    srcs = paths[starter]
+    unmarked = [f"{s}: {d}" for s, d in srcs if not marked(d)]
+    evidence.append(
+        f"LIGHT_BALL_GSC (${light_ball:02X}) written only at "
+        + ", ".join(f"{f}:{n}" for f, n in writers)
+        + f"; {starter} base catch rate is {base_rate} (${base_rate:02X})")
+
     blocked = {}
-    if foreign:
-        evidence.append(f"NOT blocking: in-game trade gives a foreign-OT {starter}: {foreign}")
+    if unmarked:
+        evidence.append(f"NOT blocking: {len(unmarked)} {starter} source(s) carry the base catch rate, "
+                        f"so they fail the LIGHT_BALL_GSC check and can stone-evolve: "
+                        + "; ".join(unmarked))
     else:
-        evidence.append(f"no in-game NPC trade gives {starter}, so every single-cart {starter} "
-                        f"has the player's OT and fails the stone check")
-        for a, b, m, d in evos:
-            if a == starter and m == "item":
-                blocked[(a, b)] = (f"stone evolution refused for own-OT {starter}; "
-                                   f"needs a traded-in {starter} (foreign OT)")
+        foreign = [(get, where) for get, where, _, _ in trades_used if get == starter]
+        if foreign:
+            evidence.append(f"NOT blocking: in-game trade gives a foreign-OT {starter}: {foreign}")
+        else:
+            evidence.append(f"the only single-cart {starter} is the marked starter, so it fails the "
+                            f"stone check")
+            for a, b, m, d in evos:
+                if a == starter and m == "item":
+                    blocked[(a, b)] = (f"stone evolution refused for the marked starter {starter}; "
+                                       f"no other {starter} source on one cartridge")
     return blocked, evidence
 
 
@@ -690,7 +765,7 @@ def main():
     item_ok = {it for it, s in isrc.items() if s["buy"] or s["found"]}
 
     # Evolutions the game itself refuses on a single cartridge (starter Pikachu + stone).
-    blocked_evos, starter_block_evidence = verify_starter_stone_block(aliases, species, trades_used, evos)
+    blocked_evos, starter_block_evidence = verify_starter_stone_block(aliases, species, trades_used, evos, paths)
 
     def compute(disabled=frozenset()):
         """Reachability fixpoint. `disabled` holds source keys switched off by a

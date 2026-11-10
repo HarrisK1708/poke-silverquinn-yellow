@@ -260,7 +260,11 @@ def reach_overworld(g, budget=60 * 60 * 3):
     raise RuntimeError("never reached the overworld start menu")
 
 
-def inject(g, consts, FROM):
+def inject(g, consts, FROM, level=None, catch_rate=0, bag_item="RARE_CANDY", exp_mode="below_next"):
+    """Write party slot 1 = FROM (own OT) and put one bag_item in the bag.
+    exp_mode 'below_next': XP one below the next level (Rare Candy cases);
+    'at_level': XP exactly at `level` (stone cases)."""
+    level = FROM_LEVEL if level is None else level
     s, m = g.s, g.m
     species = consts["species"]
     stats, types, rate, level1 = load_base_stats(FROM)
@@ -270,14 +274,14 @@ def inject(g, consts, FROM):
     # moveset the game would have at FROM_LEVEL: level-1 moves, then learned moves push out the oldest
     moves = list(level1)
     for lvl, mv in learn:
-        if lvl <= FROM_LEVEL and mv not in moves:
+        if lvl <= level and mv not in moves:
             moves = (moves + [mv])[-4:]
-    exp37 = exp_for_level(rate, FROM_LEVEL + 1)
-    exp = exp37 - 1
-    assert exp >= exp_for_level(rate, FROM_LEVEL), "XP below Lv36 threshold"
+    exp37 = exp_for_level(rate, level + 1)
+    exp = exp37 - 1 if exp_mode == "below_next" else exp_for_level(rate, level)
+    assert exp_for_level(rate, level) <= exp < exp37, "XP outside the level's range"
 
     dv = 15
-    st = {k: calc_stat(v, dv, FROM_LEVEL, k == "hp") for k, v in stats.items()}
+    st = {k: calc_stat(v, dv, level, k == "hp") for k, v in stats.items()}
     base = s["wPartyMon1"]
     mon = [0] * (s["wPartyMon2"] - base)
 
@@ -287,16 +291,16 @@ def inject(g, consts, FROM):
 
     put("wPartyMon1Species", [species[FROM]])
     put("wPartyMon1HP", list(st["hp"].to_bytes(2, "big")))
-    put("wPartyMon1BoxLevel", [FROM_LEVEL])
+    put("wPartyMon1BoxLevel", [level])
     put("wPartyMon1Status", [0])
     put("wPartyMon1Type1", [TYPE_NAMES[types[0]], TYPE_NAMES[types[1]]])
-    put("wPartyMon1CatchRate", [0])
+    put("wPartyMon1CatchRate", [catch_rate])
     put("wPartyMon1Moves", [MOVES[x] for x in moves] + [0] * (4 - len(moves)))
     put("wPartyMon1OTID", [m[s["wPlayerID"]], m[s["wPlayerID"] + 1]])
     put("wPartyMon1Exp", list(exp.to_bytes(3, "big")))
     put("wPartyMon1DVs", [0xFF, 0xFF])
     put("wPartyMon1PP", [pp[x] for x in moves] + [0] * (4 - len(moves)))
-    put("wPartyMon1Level", [FROM_LEVEL])
+    put("wPartyMon1Level", [level])
     put("wPartyMon1MaxHP", list(st["hp"].to_bytes(2, "big")))
     put("wPartyMon1Attack", list(st["atk"].to_bytes(2, "big")))
     put("wPartyMon1Defense", list(st["def"].to_bytes(2, "big")))
@@ -314,7 +318,7 @@ def inject(g, consts, FROM):
     for i, b in enumerate(encode(FROM, 11)):
         m[s["wPartyMonNicks"] + i] = b
     m[s["wNumBagItems"]] = 1
-    for i, b in enumerate([consts["items"]["RARE_CANDY"], 1, 0xFF]):
+    for i, b in enumerate([consts["items"][bag_item], 1, 0xFF]):
         m[s["wBagItems"] + i] = b
     return {"exp": exp, "exp37": exp37, "rate": rate, "moves": moves, "stats": st}
 
