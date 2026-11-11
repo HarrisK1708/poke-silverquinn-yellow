@@ -1254,30 +1254,24 @@ MewDexEntry:
 	text_far _MewDexEntry
 	text_end
 
-; TODO(dex): PLACEHOLDER category/height/weight/text for SILVER --
-; replace with the real entry before release (grep "TODO(dex)").
 SilverDexEntry:
-	db "TODO@"
-	db 1,1
-	dw 111
+	db "LOYAL@"
+	db 1,2
+	dw 154
 	text_far _SilverDexEntry
 	text_end
 
-; TODO(dex): PLACEHOLDER category/height/weight/text for QUINN --
-; replace with the real entry before release (grep "TODO(dex)").
 QuinnDexEntry:
-	db "TODO@"
-	db 1,1
-	dw 111
+	db "LOYAL@"
+	db 1,3
+	dw 176
 	text_far _QuinnDexEntry
 	text_end
 
-; TODO(dex): PLACEHOLDER category/height/weight/text for RAYA --
-; replace with the real entry before release (grep "TODO(dex)").
 RayaDexEntry:
-	db "TODO@"
-	db 1,1
-	dw 111
+	db "LOYAL@"
+	db 1,0
+	dw 110
 	text_far _RayaDexEntry
 	text_end
 

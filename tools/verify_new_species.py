@@ -8,8 +8,11 @@ Flow: boot a temp copy of the ROM (the repo's .ram/.state are never touched),
 play the intro to the bedroom, set EVENT_GOT_POKEDEX and mark the new species
 and the cry-base species seen + owned (a display test: the catch path itself is
 proven by tools/verify_statics.py), then START > POKéDEX:
-  * for every new species: select it > DATA; screenshot page 1 and page 2 and
-    decode the screen text (number, name, category, HT/WT, entry text)
+  * for every new species: select it > DATA; screenshot every text page and
+    decode the tile map: number, name, category and HT/WT must match
+    data/pokemon/dex_entries.asm, and each page's three lines must equal the
+    lines in data/pokemon/dex_text.asm exactly (no clipping, no wrap/spill
+    into the rows between lines, nothing in the border column)
   * for every new species and its base: select it > CRY and record the audio
     to <species>_cry.wav. Before each cry the overworld music is stopped
     (music channel ids zeroed, DACs off) so only the cry is captured; each
@@ -47,6 +50,71 @@ def cry_params():
         m = re.match(r"\s*mon_cry (SFX_CRY_\w+), \$(\w+), \$(\w+) ; (.+)$", l)
         if m:
             out[m.group(4).strip().upper()] = (m.group(1), int(m.group(2), 16), int(m.group(3), 16))
+    return out
+
+
+TEXT_ROWS, TEXT_COL, TEXT_W = (11, 13, 15), 1, 18
+EXTRA = {0xF4: ",", 0xE3: "-", 0x60: "′", 0x61: "″", 0x54: "#", 0xEE: "▼", 0xF2: "."}  # $F2 = <DOT>
+
+
+def tile_char(t):
+    if t in EXTRA:
+        return EXTRA[t]
+    return ve.DECODE.get(t, "¤")           # an unmapped glyph shows as ¤, never as a blank
+
+
+def text_box(g):
+    """The three dex text lines exactly as on screen (trailing blanks stripped)."""
+    base = g.s["wTileMap"]
+    return [("".join(tile_char(g.m[base + y * 20 + x]) for x in range(TEXT_COL, TEXT_COL + TEXT_W))).rstrip()
+            for y in TEXT_ROWS]
+
+
+def box_gaps_clear(g):
+    """Rows between/below the lines must be blank (only the ▼ prompt at (18,16)): anything
+    else means text wrapped or spilled. Col 19 must be the box border, not text."""
+    base = g.s["wTileMap"]
+    for y in (12, 14, 16):
+        for x in range(TEXT_COL, TEXT_COL + TEXT_W):
+            t = g.m[base + y * 20 + x]
+            if t != 0x7F and not (y == 16 and x == 18 and t == 0xEE):
+                return False
+    # col 19 is the box border: a letter or punctuation there means a line overflowed
+    return not any(tile_char(g.m[base + y * 20 + 19]) in ve.CHARMAP or g.m[base + y * 20 + 19] in EXTRA
+                   for y in TEXT_ROWS if g.m[base + y * 20 + 19] != 0x7F)
+
+
+def screen_rows(g):
+    base = g.s["wTileMap"]
+    return ["".join(" " if g.m[base + y * 20 + x] == 0x7F else tile_char(g.m[base + y * 20 + x])
+                    for x in range(20)) for y in range(18)]
+
+
+def pad3(lines):
+    return (list(lines) + ["", "", ""])[:3]
+
+
+def expected_entries():
+    """category / height / weight from dex_entries.asm and the paged text from dex_text.asm,
+    as the game should draw it (the dex terminator appends the final period)."""
+    out = {}
+    src = open(os.path.join(ROOT, "data/pokemon/dex_entries.asm")).read()
+    txt = open(os.path.join(ROOT, "data/pokemon/dex_text.asm")).read()
+    for n in NEW:
+        cap = n.capitalize()
+        m = re.search(rf'^{cap}DexEntry:\n\tdb "([^@]*)@"\n\tdb (\d+),\s*(\d+)\n\tdw (\d+)', src, re.M)
+        assert m, f"no {cap}DexEntry"
+        ft, inch, wt = int(m.group(2)), int(m.group(3)), int(m.group(4))
+        body = re.search(rf"^_{cap}DexEntry::\n(.*?)\tdex\n", txt, re.M | re.S).group(1)
+        pages = []
+        for kw, s in re.findall(r'^\t(text|next|page) "(.*)"$', body, re.M):
+            if kw in ("text", "page"):
+                pages.append([])
+            pages[-1].append(s)
+        pages[-1][-1] += "."
+        for p in pages:
+            assert len(p) <= 3 and all(len(l) <= TEXT_W for l in p), f"{n}: source line too long / page too tall: {p}"
+        out[n] = dict(category=m.group(1), ht=f"{ft}′{inch:02d}″", wt=f"{wt // 10}.{wt % 10}lb", pages=pages)
     return out
 
 
@@ -119,6 +187,7 @@ def main():
     dex = ve.load_consts("constants/pokedex_constants.asm")
     events = ve.load_consts("constants/event_constants.asm")
     params = cry_params()
+    expected = expected_entries()
     bases = cry_base_species(params)
     os.makedirs(args.out_dir, exist_ok=True)
 
@@ -148,33 +217,39 @@ def main():
         # ---- entries ----
         for n in NEW:
             num = dex["DEX_" + n]
+            exp = expected[n]
             goto_entry(g, n, num)
             g.select("DATA")
-            # the entry draws in stages: header, then A shows text page 1, A shows page 2
-            for _ in range(4):
-                if "real dex" in g.text():
-                    break
-                g.tick(60)
-                if "real dex" not in g.text() and "HT" in g.text():
-                    g.press("a", 30)
-            assert g.wait_for("real dex", 300), f"{n}: entry text page 1 never appeared:\n" + g.text()
-            g.tick(40)
-            p1 = os.path.join(args.out_dir, f"dex_{n.lower()}_1.png")
-            pyboy.screen.image.save(p1)
-            t1 = g.text()
-            g.press("a", 30)
-            assert g.wait_for("do not ship", 300), f"{n}: entry text page 2 never appeared:\n" + g.text()
-            g.tick(40)
-            p2 = os.path.join(args.out_dir, f"dex_{n.lower()}_2.png")
-            pyboy.screen.image.save(p2)
-            t2 = g.text()
-            g.press("a", 30)
-            assert g.wait_for("CONTENTS", 300), f"{n}: did not return to the list:\n" + g.text()
+            # header first (category, HT/WT), then each A press shows the next text page
+            assert g.wait_for(exp["category"], 300), f"{n}: entry header never appeared:\n" + g.text()
+            shots, pages_seen, page_ok = [], [], []
+            for k, want in enumerate(exp["pages"]):
+                for _ in range(40):
+                    if text_box(g)[0] == want[0]:
+                        break
+                    g.tick(15)
+                    if k == 0 and not any(text_box(g)):  # page 1 sometimes waits for A
+                        g.press("a", 30)
+                g.tick(40)
+                got = text_box(g)
+                pages_seen.append(got)
+                page_ok.append(got == pad3(want) and box_gaps_clear(g))
+                path = os.path.join(args.out_dir, f"dex_{n.lower()}_{k + 1}.png")
+                pyboy.screen.image.save(path)
+                shots.append(path)
+                if k == 0:
+                    first_header = screen_rows(g)
+                g.press("a", 30)
+            assert g.wait_for("CONTENTS", 300), f"{n}: did not return to the list after the last page:\n" + g.text()
             reopen_dex(g)
-            checks = {"number": f"{num:03d}" in t1, "name": n in t1, "category TODO": "TODO" in t1,
-                      "entry text": "real dex" in t1 and "Placeholder" in t2,
-                      "HT/WT shown": "HT" in t1 and "WT" in t1}
-            entries[n] = (checks, t1, t2, p1, p2)
+            rows = first_header
+            checks = {"number": f"{num:03d}" in "".join(rows),
+                      "name": n in rows[2],
+                      "category": exp["category"] in rows[4],
+                      "height": exp["ht"] in rows[6].replace(" ", ""),
+                      "weight": exp["wt"] in rows[8].replace(" ", ""),
+                      **{f"page {k + 1}": ok_ for k, ok_ in enumerate(page_ok)}}
+            entries[n] = (checks, rows, pages_seen, exp["pages"], shots)
             ok &= all(checks.values())
 
         # ---- cries ----
@@ -225,12 +300,14 @@ def main():
         pyboy.stop(save=False)
         shutil.rmtree(tmp, ignore_errors=True)
 
-    print("=== Pokédex entries (decoded screen text) ===")
-    for n, (checks, t1, t2, p1, p2) in entries.items():
-        print(f"\n--- {n} --- {'  '.join(f'{k}:{'ok' if v else 'MISSING'}' for k, v in checks.items())}")
-        print("page 1:\n" + "\n".join("  |" + r + "|" for r in t1.split("\n")))
-        print("page 2 (text box):\n" + "\n".join("  |" + r + "|" for r in t2.split("\n")[-6:]))
-        print(f"screenshots: {p1}, {p2}")
+    print("=== Pokédex entries (decoded from the tile map; text box = rows 11/13/15, cols 1-18) ===")
+    for n, (checks, rows, seen, want, shots) in entries.items():
+        print(f"\n--- {n} --- " + "  ".join(f"{k}:{'ok' if v else 'MISMATCH'}" for k, v in checks.items()))
+        print("header:\n" + "\n".join("  |" + r + "|" for r in rows[:10]))
+        for k, (got, w) in enumerate(zip(seen, want)):
+            print(f"page {k + 1} ({os.path.basename(shots[k])}):")
+            for gl, wl in zip(got, pad3(w)):
+                print(f"  |{gl:<18}|" + ("" if gl == wl else f"   expected |{wl}|"))
     print("\n=== Cries (WAV, %d Hz stereo 16-bit; %d-frame silent pre-roll then the cry) ===" % (sr, PREROLL_FRAMES))
     print(f"  {'species':<10} {'mon_cry (base, pitch, length)':<30} {'audible':>8} {'RMS':>6} "
           f"{'centroid Hz':>11}  pre-roll  file")

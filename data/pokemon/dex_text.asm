@@ -1507,35 +1507,43 @@ _MewDexEntry::
 	next "hair can be seen"
 	dex
 
-; TODO(dex): PLACEHOLDER text for SILVER; replace before release.
 _SilverDexEntry::
-	text "TODO: real dex"
-	next "entry for"
-	next "SILVER."
+	text "Fiercely"
+	next "independent, it"
+	next "digs in its heels"
 
-	page "Placeholder text,"
-	next "do not ship."
-	next "Size is TODO too"
+	page "and will not budge"
+	next "once it decides."
+	next "Its bristled grey"
+
+	page "coat hardens like"
+	next "stone to shrug off"
+	next "blows"
 	dex
 
-; TODO(dex): PLACEHOLDER text for QUINN; replace before release.
 _QuinnDexEntry::
-	text "TODO: real dex"
-	next "entry for"
-	next "QUINN."
+	text "Boundlessly cheer-"
+	next "ful, it bounds up"
+	next "to any stranger"
 
-	page "Placeholder text,"
-	next "do not ship."
-	next "Size is TODO too"
+	page "without fear. The"
+	next "sweet scent it"
+	next "gives off puts"
+
+	page "others at ease,"
+	next "and sometimes to"
+	next "sleep"
 	dex
 
-; TODO(dex): PLACEHOLDER text for RAYA; replace before release.
 _RayaDexEntry::
-	text "TODO: real dex"
-	next "entry for"
-	next "RAYA."
+	text "A bashful creature"
+	next "that hides behind"
+	next "those it trusts."
 
-	page "Placeholder text,"
-	next "do not ship."
-	next "Size is TODO too"
+	page "Few ever see the"
+	next "gentle glow it"
+	next "sheds when it"
+
+	page "finally feels"
+	next "safe"
 	dex
