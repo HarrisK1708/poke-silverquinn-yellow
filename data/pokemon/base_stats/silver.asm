@@ -7,7 +7,6 @@
 	db 45 ; catch rate
 	db 215 ; base exp
 
-	; TODO(art): placeholder pics, see gfx/pics.asm "Pics 8"
 	INCBIN "gfx/pokemon/front/silver.pic", 0, 1 ; sprite dimensions
 	dw SilverPicFront, SilverPicBack
 

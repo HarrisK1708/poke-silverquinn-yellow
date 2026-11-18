@@ -7,7 +7,6 @@
 	db 45 ; catch rate
 	db 216 ; base exp
 
-	; TODO(art): placeholder pics, see gfx/pics.asm "Pics 8"
 	INCBIN "gfx/pokemon/front/quinn.pic", 0, 1 ; sprite dimensions
 	dw QuinnPicFront, QuinnPicBack
 

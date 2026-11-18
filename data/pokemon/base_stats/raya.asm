@@ -7,7 +7,6 @@
 	db 45 ; catch rate
 	db 217 ; base exp
 
-	; TODO(art): placeholder pics, see gfx/pics.asm "Pics 8"
 	INCBIN "gfx/pokemon/front/raya.pic", 0, 1 ; sprite dimensions
 	dw RayaPicFront, RayaPicBack
 

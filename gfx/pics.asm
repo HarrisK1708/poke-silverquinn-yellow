@@ -384,7 +384,6 @@ ProfOakPicBack::   INCBIN "gfx/battle/prof.oakb.pic"
 
 SECTION "Pics 8", ROMX
 
-; TODO(art): placeholder art (copies of Rhydon/Venusaur/Dragonite); swap the PNGs.
 ; Bank chosen in UncompressMonSprite by the SILVER..RAYA id range.
 SilverPicFront::      INCBIN "gfx/pokemon/front/silver.pic"
 SilverPicBack::       INCBIN "gfx/pokemon/back/silverb.pic"
