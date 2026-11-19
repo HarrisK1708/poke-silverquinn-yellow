@@ -87,3 +87,9 @@ ChanseySprite::          INCBIN "gfx/sprites/chansey.2bpp"
 SurfingPikachuSprite::   INCBIN "gfx/sprites/surfing_pikachu.2bpp"
 JessieSprite::           INCBIN "gfx/sprites/jessie.2bpp"
 JamesSprite::            INCBIN "gfx/sprites/james.2bpp"
+
+
+; floating (not in layout.link): bank $3F has no room in the debug build
+SECTION "NPC Sprites 4", ROMX
+
+LegendaryDogSprite::     INCBIN "gfx/sprites/legendary_dog.2bpp"

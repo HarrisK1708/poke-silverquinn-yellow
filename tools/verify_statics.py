@@ -40,8 +40,8 @@ Checks per static (all must pass; exit non-zero otherwise):
   (5) flag suppresses     negative control: from the pre-talk snapshot with the
                           EVENT_BEAT_* flag pre-set, talking does NOT start a battle
 
-Screenshots: verify_static_<species>_battle.png (battle intro) and
-_caught.png / _continued.png / _flag_set.png.
+Screenshots: verify_static_<species>_overworld.png (map object, before talking),
+_battle.png (battle intro), _caught.png / _continued.png / _flag_set.png.
 
 Requires: pip install pyboy pillow
 Usage:    python3 tools/verify_statics.py [--only SILVER,MEW] [--rom pokeyellow.gbc] [--screenshot-dir DIR]
@@ -239,6 +239,7 @@ def run_static(PyBoy, rom_src, bedroom_state, sym, consts, ids, st, hook_addr, s
         assert not flag(m, s["wPokedexOwned"], DEX - 1), "already owned before the catch"
         placed = io.BytesIO()
         pyboy.save_state(placed)
+        pyboy.screen.image.save(shot("overworld"))  # map object, player facing it
 
         # ---- (1)-(3) talk, battle, catch ----
         cry_text = f"{species_name.capitalize()}!"

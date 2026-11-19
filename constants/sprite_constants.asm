@@ -55,7 +55,7 @@
 	const SPRITE_MOM                     ; $33
 	const SPRITE_BALDING_GUY             ; $34
 	const SPRITE_LITTLE_BOY              ; $35
-	const SPRITE_UNUSED_RED_3            ; $36
+	const SPRITE_LEGENDARY_DOG           ; $36 (was SPRITE_UNUSED_RED_3; reused so no sprite ID shifts)
 	const SPRITE_GAMEBOY_KID             ; $37
 	const SPRITE_FAIRY                   ; $38
 	const SPRITE_AGATHA                  ; $39

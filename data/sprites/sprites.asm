@@ -60,7 +60,7 @@ SpriteSheetPointerTable:
 	overworld_sprite MomSprite, 12              ; SPRITE_MOM
 	overworld_sprite BaldingGuySprite, 12       ; SPRITE_BALDING_GUY
 	overworld_sprite LittleBoySprite, 12        ; SPRITE_LITTLE_BOY
-	overworld_sprite RedSprite, 12              ; SPRITE_UNUSED_RED_3
+	overworld_sprite LegendaryDogSprite, 12     ; SPRITE_LEGENDARY_DOG
 	overworld_sprite GameboyKidSprite, 12       ; SPRITE_GAMEBOY_KID
 	overworld_sprite FairySprite, 12            ; SPRITE_FAIRY
 	overworld_sprite AgathaSprite, 12           ; SPRITE_AGATHA
