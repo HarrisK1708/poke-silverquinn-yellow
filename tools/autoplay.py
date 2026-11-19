@@ -24,9 +24,13 @@ battle and never throws balls.
 
 Policies
   * Moves: the first move slot with PP left that is not disabled, preferring
-    damaging moves (base power > 0, from data/moves/moves.asm) so a lead whose
-    attacks ran dry does not loop TAIL WHIP forever; a battle that still runs
-    past --battle-limit seconds of game time stops the bot with a report.
+    damaging moves (base power > 0, from data/moves/moves.asm).
+  * PP depletion: if the active Pokemon has no damaging move with PP, it is
+    switched (PkMn > SWITCH) for a healthy teammate that has one. If nobody
+    has damaging PP, any remaining status-move PP is used up so the game
+    falls back to STRUGGLE ("has no moves left!"), which is damaging. Only a
+    battle that still runs past --battle-limit seconds of game time stops the
+    bot with a report.
   * Healing: when the active Pokemon's HP is at or below --heal-below (fraction
     of max HP, default 0.33) and the bag has a healing item (POTION, SUPER
     POTION, HYPER POTION, MAX POTION, FULL RESTORE, FRESH WATER, SODA POP,
@@ -43,8 +47,17 @@ Policies
     after --stall-seconds of emulated time without progress.
 
 Everything is resolved from pokeyellow.sym and the repo's constants (nothing is
-hard-coded). The ROM is copied to a temp dir and the emulator is stopped
-without saving, so pokeyellow.gbc.ram / .state are never written.
+hard-coded).
+
+By default NOTHING of yours is changed: the ROM is copied to a temp dir, the
+--state file is only read, and the emulator is stopped without saving, so the
+grinding is thrown away at exit. To keep it, opt in:
+  --save-state OUT    write a PyBoy save state at the end (load it with X)
+  --in-game-save --ram-out OUT
+                      save with the game's own START > SAVE > YES, then copy
+                      the temp copy's battery file to OUT
+A current battle is finished first. An existing OUT is copied to OUT.bak
+before it is overwritten.
 
 --make-test-state OUT builds a reproducible test state the same way
 tools/verify_statics.py places the player: boot a temp copy, play the intro,
@@ -145,6 +158,10 @@ class Bot:
         self.heal_pending = False
         self.heal_tried_hp = None
         self.switch_target = None
+        self.switch_want = None
+        self.struggle_noted = False
+        self.struggle_seen = False
+        self.struggles = 0
         self.evolving_seen = False
         self.grass_seen = False
         self.start_frame = None
@@ -181,6 +198,27 @@ class Bot:
             if v == item_id:
                 return k.replace("_", " ")
         return f"${item_id:02X}"
+
+    def damaging(self, move_id):
+        return self.power.get(move_id, 0) > 0
+
+    def mon_has_damaging_pp(self, i):
+        """Party slot i has a damaging move with PP left (the active mon's live
+        battle PP is used while in battle)."""
+        m, s = self.m, self.s
+        if self.in_battle and i == m[s["wPlayerMonNumber"]]:
+            mv, pp = s["wBattleMonMoves"], s["wBattleMonPP"]
+        else:
+            mv, pp = self.mon(i, "Moves"), self.mon(i, "PP")
+        return any(m[mv + k] and m[pp + k] & 0x3F and self.damaging(m[mv + k]) for k in range(4))
+
+    def switch_candidate(self):
+        """A non-fainted, non-active party slot with damaging PP, or None."""
+        active = self.m[self.s["wPlayerMonNumber"]]
+        for i, p in enumerate(self.party()):
+            if i != active and p["hp"] and self.mon_has_damaging_pp(i):
+                return i
+        return None
 
     def usable_move(self):
         """First slot with PP that is not disabled, preferring damaging moves
@@ -259,6 +297,10 @@ class Bot:
             return "PARTY_SWITCH"
         if "Use item on which" in t:
             return "PARTY_ITEM"
+        if self.m[self.s["wIsInBattle"]] and "SWITCH" in t and "STATS" in t and cursor:
+            return "PARTY_SUBMENU"
+        if self.m[self.s["wIsInBattle"]] and "Choose a" in t:
+            return "PARTY_CHOOSE"
         if self.m[self.s["wIsInBattle"]]:
             if "TYPE" in t and cursor:       # move list (the "/" tile is not in the decoder)
                 return "MOVE_MENU"
@@ -278,6 +320,7 @@ class Bot:
         # wEnemyMon* is filled in a few frames after wIsInBattle is set: read it in end_battle
         self.battle_info = {"n": self.battles, "lead": self.lead(), "frame": self.g.frames}
         self.heal_tried_hp = None
+        self.struggle_noted = False
         self.log(f"battle #{self.battles}")
 
     def end_battle(self):
@@ -339,7 +382,7 @@ class Bot:
         if (self.in_battle and self.battle_info and self.args.battle_limit
                 and self.g.frames - self.battle_info["frame"] > self.args.battle_limit * 60):
             self.stop_reason = (f"battle #{self.battles} exceeded --battle-limit {self.args.battle_limit}s "
-                                f"of game time (no damaging move left?)")
+                                f"of game time (no damaging move left and STRUGGLE never ended it)")
             return
         if self.g.frames - self.progress_frame > self.args.stall_seconds * 60:
             self.stop_reason = f"stalled: screen unchanged for {self.args.stall_seconds}s in state {state}"
@@ -398,6 +441,13 @@ class Bot:
         self.wander_dir = {"up": "down", "down": "up", "left": "right", "right": "left"}[self.wander_dir]
 
     def on_battle_text(self, rows):
+        t = "\n".join(rows)
+        if "moves left" in t and not self.struggle_seen:
+            self.struggle_seen = True
+            self.struggles += 1
+            self.log("  no PP left at all: the game uses STRUGGLE")
+        elif "moves left" not in t:
+            self.struggle_seen = False
         # let text and animations play; press A only when the screen has settled
         if self.static_frames >= 3:
             self.press("a")
@@ -411,11 +461,46 @@ class Bot:
         want_heal = (heal is not None and hp and maxhp and hp <= maxhp * self.args.heal_below
                      and self.heal_tried_hp != hp)
         self.heal_pending = want_heal
+        active = m[s["wPlayerMonNumber"]]
+        if not want_heal and not self.mon_has_damaging_pp(active):
+            cand = self.switch_candidate()
+            if cand is not None:
+                self.switch_want = cand
+                if self.move_cursor_to_pkmn(rows):
+                    self.log(f"  {self.mon_name(active)} has no damaging PP left: switching to "
+                             f"party slot {cand + 1} ({self.mon_name(cand)})")
+                    self.press("a", after=20)
+                return
+            if not self.struggle_noted:
+                self.struggle_noted = True
+                self.log("  no party member has damaging PP: using up any PP left so the game falls back "
+                         "to STRUGGLE")
+        self.switch_want = None
         if self.move_cursor_to_label(rows, "ITEM" if want_heal else "FIGHT"):
             if want_heal:
                 self.heal_tried_hp = hp  # one attempt per HP value: no loop if the item cannot be used
                 self.log(f"  HP {hp}/{maxhp}: using {self.item_name(heal[1])}")
             self.press("a", after=20)
+
+    def move_cursor_to_pkmn(self, rows):
+        """The PkMn cell (its label tiles are not in the text decoder): FIGHT's row,
+        RUN's column."""
+        f = next(((r.find("FIGHT"), y) for y, r in enumerate(rows) if r.find("FIGHT") > 0), None)
+        r_ = next(((r.find("RUN"), y) for y, r in enumerate(rows) if r.find("RUN") > 0), None)
+        cur = self.cursor_pos(rows)
+        if not (f and r_ and cur):
+            return False
+        tx, ty = r_[0] - 1, f[1]
+        if cur == (tx, ty):
+            return True
+        if cur[1] != ty:
+            self.press("down" if ty > cur[1] else "up")
+        else:
+            self.press("right" if tx > cur[0] else "left")
+        return False
+
+    def mon_name(self, i):
+        return self.species_name.get(self.m[self.s["wPartySpecies"] + i], "?")
 
     def on_move_menu(self, rows):
         if self.heal_pending:
@@ -462,7 +547,12 @@ class Bot:
     def on_party_switch(self, rows):
         party = self.party()
         active = self.m[self.s["wPlayerMonNumber"]]
-        target = next((i for i, p in enumerate(party) if p["hp"] and i != active), None)
+        target = self.switch_want if self.switch_want is not None and party[self.switch_want]["hp"] else None
+        if target is None:
+            target = next((i for i, p in enumerate(party)
+                           if p["hp"] and i != active and self.mon_has_damaging_pp(i)), None)
+        if target is None:
+            target = next((i for i, p in enumerate(party) if p["hp"] and i != active), None)
         if target is None:
             target = next((i for i, p in enumerate(party) if p["hp"]), None)
         if target is None:
@@ -474,7 +564,15 @@ class Bot:
                 self.switches += 1
                 self.log(f"  sending out party slot {target + 1} "
                          f"({self.species_name.get(party[target]['species'], '?')}, HP {party[target]['hp']})")
+            self.switch_want = None
             self.press("a", after=30)
+
+    def on_party_choose(self, rows):
+        """Voluntary switch from the battle PkMn menu ("Choose a POKeMON.")."""
+        if self.switch_want is None:
+            self.press("b")
+            return
+        self.on_party_switch(rows)
 
     def on_party_submenu(self, rows):
         if self.move_cursor_to_label(rows, "SWITCH"):
@@ -541,10 +639,64 @@ class Bot:
                     self.stop_reason = "no usable Pokemon left"
         except KeyboardInterrupt:
             self.stop_reason = "interrupted (Ctrl-C)"
+        if self.in_battle and (self.args.save_state or self.args.in_game_save) and self.stop_reason.startswith(
+                ("reached", "interrupted")):
+            self.finish_battle()
         if self.in_battle and self.battle_info:
             self.battle_info.update(outcome="unfinished", after=self.lead())
         self.elapsed = time.time() - t0
         self.frames_run = self.g.frames - f0
+
+    def finish_battle(self, limit_seconds=300):
+        """Keep fighting until the current battle is over, so a save lands in the overworld."""
+        self.log("  finishing the current battle before saving")
+        reason, self.stop_reason = self.stop_reason, None
+        end = self.g.frames + limit_seconds * 60
+        try:
+            while self.in_battle and self.stop_reason is None and self.g.frames < end:
+                self.step()
+        except KeyboardInterrupt:
+            pass
+        self.stop_reason = self.stop_reason or reason
+
+    def to_overworld(self, tries=20):
+        """Dismiss leftover text until the START menu opens; leaves it open. True on success."""
+        for _ in range(tries):
+            if self.m[self.s["wIsInBattle"]]:
+                return False
+            self.press("start", after=40)
+            if self.g.wait_for("SAVE", 60) and "ITEM" in self.g.text():
+                return True
+            self.press("b", after=30)
+            self.press("b", after=30)
+        return False
+
+    def in_game_save(self):
+        """START > SAVE > YES (and YES to overwrite an older file); True once the game says it saved."""
+        self.log("in-game save: START > SAVE > YES")
+        if not self.to_overworld():
+            self.log("  could not reach the START menu (still in a battle or a cutscene): not saved")
+            return False
+        try:
+            self.g.select("SAVE")
+        except RuntimeError as e:
+            self.log(f"  {e}")
+            return False
+        for _ in range(120):
+            t = self.g.text()
+            if "saved" in t:
+                self.tick(180)
+                for _ in range(3):
+                    self.press("b", after=30)
+                self.log("  game saved")
+                return True
+            if "YES" in t and self.cursor_pos(self.screen()):
+                if self.move_cursor_to_label(self.screen(), "YES"):
+                    self.press("a", after=60)
+                continue
+            self.tick(10)
+        self.log("  the game never confirmed the save")
+        return False
 
     def summary(self):
         end = self.lead()
@@ -561,6 +713,7 @@ class Bot:
                  f"  lead XP            {self.lead_start['exp']} -> {end['exp']} (+{end['exp'] - self.lead_start['exp']})",
                  f"  heals used         {self.heals}",
                  f"  switches           {self.switches}",
+                 f"  STRUGGLE uses      {self.struggles}",
                  f"  moves declined     {self.declined_moves}",
                  f"  evolutions         {self.evolutions} (cancelled {self.cancelled_evos})",
                  f"  party HP           " + ", ".join(f"{self.species_name.get(p['species'], '?')} Lv{p['level']} "
@@ -585,11 +738,16 @@ def load_tables():
 
 
 def parse_party(spec):
-    """'RATTATA:15,PIDGEY:12:50' -> [(species, level, hp percent)]"""
+    """'RATTATA:15,PIDGEY:12:50:0/0/5/0' -> [(species, level, hp percent, pp list or None)]
+    PP is one number for every move or four slash-separated values."""
     out = []
     for part in spec.split(","):
         f = part.strip().upper().split(":")
-        out.append((f[0], int(f[1]), int(f[2]) if len(f) > 2 else 100))
+        pp = None
+        if len(f) > 3:
+            pp = [int(x) for x in f[3].split("/")]
+            pp = pp * 4 if len(pp) == 1 else pp
+        out.append((f[0], int(f[1]), int(f[2]) if len(f) > 2 else 100, pp))
     return out
 
 
@@ -648,15 +806,18 @@ def make_test_state(args, sym, consts):
         g.tick(60)
         stride = s["wPartyMon2"] - s["wPartyMon1"]
         structs, nicks = [], []
-        for sp, lv, _ in party:
+        for sp, lv, _, _ in party:
             ve.inject(g, consts, sp, level=lv, exp_mode="below_next")   # XP one below the next level
             structs.append([m[s["wPartyMon1"] + i] for i in range(stride)])
             nicks.append([m[s["wPartyMonNicks"] + i] for i in range(11)])
-        for k, ((sp, lv, pct), st, nk) in enumerate(zip(party, structs, nicks)):
+        for k, ((sp, lv, pct, pp), st, nk) in enumerate(zip(party, structs, nicks)):
             for i, b in enumerate(st):
                 m[s["wPartyMon1"] + k * stride + i] = b
             hp = max(1, u16(m, s["wPartyMon1MaxHP"] + k * stride) * pct // 100) if pct else 0
             m[s["wPartyMon1HP"] + k * stride], m[s["wPartyMon1HP"] + k * stride + 1] = hp >> 8, hp & 0xFF
+            for j, v in enumerate(pp or []):
+                if m[s["wPartyMon1Moves"] + k * stride + j]:
+                    m[s["wPartyMon1PP"] + k * stride + j] = v
             for i, b in enumerate(nk):
                 m[s["wPartyMonNicks"] + k * 11 + i] = b
             for i in range(11):
@@ -690,7 +851,8 @@ def make_test_state(args, sym, consts):
         p.screen.image.save(shot)
         print(f"test state written to {args.make_test_state} (screenshot {shot})")
         print(f"  ROUTE_1 grass at ({sx},{sy}); party: "
-              + ", ".join(f"{sp} Lv{lv} {pct}% HP" for sp, lv, pct in party)
+              + ", ".join(f"{sp} Lv{lv} {pct}% HP" + (f" PP {'/'.join(map(str, pp))}" if pp else "")
+                          for sp, lv, pct, pp in party)
               + "; bag: " + (", ".join(f"{it} x{q}" for it, q in bag) or "empty"))
     finally:
         p.stop(save=False)
@@ -698,6 +860,12 @@ def make_test_state(args, sym, consts):
 
 
 # ---------------------------------------------------------------------------
+
+def backup(path):
+    if os.path.exists(path):
+        shutil.copy(path, path + ".bak")
+        print(f"(existing {path} copied to {path}.bak)")
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, epilog=USAGE_HELP,
@@ -720,11 +888,25 @@ def main():
     ap.add_argument("--battle-limit", type=int, default=600,
                     help="stop if one battle lasts longer than this many seconds of game time (default 600)")
     ap.add_argument("--screenshot", help="save the final screen to this PNG")
+    ap.add_argument("--save-state", metavar="OUT",
+                    help="at the end, write a PyBoy save state to OUT (load it in PyBoy with X to keep the "
+                         "levelled team); an existing OUT is first copied to OUT.bak")
+    ap.add_argument("--in-game-save", action="store_true",
+                    help="before stopping, save with the game's own START > SAVE > YES and write the "
+                         "resulting battery file to --ram-out")
+    ap.add_argument("--ram-out", metavar="OUT",
+                    help="where --in-game-save writes the battery (.ram) file, e.g. pokeyellow.gbc.ram "
+                         "to load it with the ROM; an existing OUT is first copied to OUT.bak")
     ap.add_argument("--make-test-state", metavar="OUT", help="build a ROUTE 1 grass test state and exit")
     ap.add_argument("--test-party", default="RATTATA:15,PIDGEY:12",
-                    help="SPECIES:LEVEL[:HP%%],... for --make-test-state (XP one below the next level)")
+                    help="SPECIES:LEVEL[:HP%%[:PP]],... for --make-test-state (XP one below the next "
+                         "level; PP = one value for every move or four slash-separated, e.g. 0/0/2/0)")
     ap.add_argument("--test-bag", default="POTION:3", help="ITEM:QTY,... for --make-test-state")
     args = ap.parse_args()
+    if args.in_game_save and not args.ram_out:
+        ap.error("--in-game-save needs --ram-out OUT (the battery file to write; nothing is written by default)")
+    if args.ram_out and not args.in_game_save:
+        ap.error("--ram-out only makes sense with --in-game-save")
 
     try:
         from pyboy import PyBoy
@@ -760,11 +942,25 @@ def main():
               f"party " + ", ".join(f"{bot.species_name.get(p['species'], '?')} Lv{p['level']}"
                                     for p in bot.party()), flush=True)
         bot.run()
+        saved = bot.in_game_save() if args.in_game_save else False
+        if args.save_state:
+            backup(args.save_state)
+            with open(args.save_state, "wb") as f:
+                pyboy.save_state(f)
+            print(f"save state written to {args.save_state}")
         if args.screenshot:
             pyboy.screen.image.save(args.screenshot)
         print(bot.summary())
     finally:
-        pyboy.stop(save=False)
+        pyboy.stop(save=bool(args.in_game_save))   # writes the temp copy's battery file only
+        if args.in_game_save:
+            ram = rom + ".ram"
+            if saved and os.path.exists(ram):
+                backup(args.ram_out)
+                shutil.copy(ram, args.ram_out)
+                print(f"in-game save written to {args.ram_out} (load it next to the ROM as <rom>.ram)")
+            else:
+                print("in-game save FAILED: nothing written to " + args.ram_out)
         shutil.rmtree(tmp, ignore_errors=True)
     return 0 if bot.stop_reason and not bot.stop_reason.startswith("stalled") else 1
 
