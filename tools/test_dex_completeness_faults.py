@@ -34,7 +34,7 @@ SUMMARY = re.compile(r"SINGLE-SAVE obtainable \(no link trades\):\s+(\d+)/(\d+)"
 
 # species, map objects file (the static's object_event), level
 ENCOUNTERS = [("SILVER", "data/maps/objects/RockTunnelB1F.asm", 50),
-              ("QUINN", "data/maps/objects/ViridianForest.asm", 50),
+              ("QUINN", "data/maps/objects/ViridianForest.asm", 10),
               ("RAYA", "data/maps/objects/CeruleanCaveB1F.asm", 50),
               ("MEW", "data/maps/objects/CeruleanCaveB1F.asm", 30)]
 

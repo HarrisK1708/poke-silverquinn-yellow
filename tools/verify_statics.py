@@ -64,7 +64,7 @@ PLAYER_DIR_DOWN = None  # set in main() from constants/sprite_data_constants.asm
 # species, map file, map constant, text constant, expected level
 STATICS = [
     ("SILVER", "RockTunnelB1F", "ROCK_TUNNEL_B1F", "TEXT_ROCKTUNNELB1F_SILVER", 50),
-    ("QUINN", "ViridianForest", "VIRIDIAN_FOREST", "TEXT_VIRIDIANFOREST_QUINN", 50),
+    ("QUINN", "ViridianForest", "VIRIDIAN_FOREST", "TEXT_VIRIDIANFOREST_QUINN", 10),
     ("RAYA", "CeruleanCaveB1F", "CERULEAN_CAVE_B1F", "TEXT_CERULEANCAVEB1F_RAYA", 50),
     ("MEW", "CeruleanCaveB1F", "CERULEAN_CAVE_B1F", "TEXT_CERULEANCAVEB1F_MEW", 30),
 ]
