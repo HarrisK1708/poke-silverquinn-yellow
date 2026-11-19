@@ -138,6 +138,7 @@ SeafoamIslandsB4F_TextPointers:
 	dw_const BoulderText,                       TEXT_SEAFOAMISLANDSB4F_BOULDER1
 	dw_const BoulderText,                       TEXT_SEAFOAMISLANDSB4F_BOULDER2
 	dw_const SeafoamIslandsB4FArticunoText,     TEXT_SEAFOAMISLANDSB4F_ARTICUNO
+	dw_const SeafoamIslandsB4FRayaText,         TEXT_SEAFOAMISLANDSB4F_RAYA
 	dw_const SeafoamIslandsB4FBouldersSignText, TEXT_SEAFOAMISLANDSB4F_BOULDERS_SIGN
 	dw_const SeafoamIslandsB4FDangerSignText,   TEXT_SEAFOAMISLANDSB4F_DANGER_SIGN
 
@@ -147,6 +148,9 @@ SeafoamIslandsB4F_TextPointers:
 	def_trainers 2
 ArticunoTrainerHeader:
 	trainer EVENT_BEAT_ARTICUNO, 0, SeafoamIslandsB4FArticunoBattleText, SeafoamIslandsB4FArticunoBattleText, SeafoamIslandsB4FArticunoBattleText
+; Raya is object 4, event flag bit 3 (same offset-by-one as Articuno).
+RayaTrainerHeader:
+	trainer EVENT_BEAT_RAYA, 0, RayaBattleText, RayaBattleText, RayaBattleText
 	db -1 ; end
 
 SeafoamIslandsB4FArticunoText:
@@ -161,6 +165,22 @@ SeafoamIslandsB4FArticunoBattleText:
 	text_far _SeafoamIslandsB4FArticunoBattleText
 	text_asm
 	ld a, ARTICUNO
+	call PlayCry
+	call WaitForSoundToFinish
+	jp TextScriptEnd
+
+SeafoamIslandsB4FRayaText:
+	text_asm
+	ld hl, RayaTrainerHeader
+	call TalkToTrainer
+	ld a, SCRIPT_SEAFOAMISLANDSB4F_OBJECT_MOVING3
+	ld [wSeafoamIslandsB4FCurScript], a
+	jp TextScriptEnd
+
+RayaBattleText:
+	text_far _RayaBattleText
+	text_asm
+	ld a, RAYA
 	call PlayCry
 	call WaitForSoundToFinish
 	jp TextScriptEnd

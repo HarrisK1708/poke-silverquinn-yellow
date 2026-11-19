@@ -372,7 +372,7 @@ ENDM
 	const TOGGLE_CERULEAN_CAVE_B1F_ITEM_3      ; DB X
 	const TOGGLE_CERULEAN_CAVE_B1F_ITEM_4      ; DC X
 	const TOGGLE_MEW                           ; DD X
-	const TOGGLE_RAYA                          ; DE X
+	const TOGGLE_CERULEAN_CAVE_B1F_RETIRED     ; DE X (was RAYA; placeholder keeps later indices stable)
 
 	toggle_consts_for VICTORY_ROAD_1F
 	const TOGGLE_VICTORY_ROAD_1F_ITEM_1        ; DF X
@@ -403,12 +403,13 @@ ENDM
 	const TOGGLE_SEAFOAM_ISLANDS_B4F_BOULDER_1 ; EC
 	const TOGGLE_SEAFOAM_ISLANDS_B4F_BOULDER_2 ; ED
 	const TOGGLE_ARTICUNO                      ; EE X
+	const TOGGLE_RAYA                          ; EF X
 
-	const TOGGLE_DAISY_SITTING_COPY            ; EF
-	const TOGGLE_DAISY_WALKING_COPY            ; F0
-	const TOGGLE_TOWN_MAP_COPY                 ; F1
+	const TOGGLE_DAISY_SITTING_COPY            ; F0
+	const TOGGLE_DAISY_WALKING_COPY            ; F1
+	const TOGGLE_TOWN_MAP_COPY                 ; F2
 
 	toggle_consts_for ROCK_TUNNEL_B1F
-	const TOGGLE_SILVER                        ; F2 X
+	const TOGGLE_SILVER                        ; F3 X
 
 DEF NUM_TOGGLEABLE_OBJECTS EQU const_value

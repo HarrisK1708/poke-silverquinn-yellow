@@ -732,7 +732,6 @@
 	const_skip
 	const EVENT_BEAT_MEWTWO
 	const EVENT_BEAT_MEW
-	const EVENT_BEAT_RAYA
 
 ; Indigo Plateau events
 	const_next $8E0
@@ -793,6 +792,7 @@ DEF INDIGO_PLATEAU_EVENTS_END EQU const_value - 1
 	const EVENT_SEAFOAM4_BOULDER2_DOWN_HOLE
 	const_skip 8
 	const EVENT_BEAT_ARTICUNO
+	const EVENT_BEAT_RAYA
 
 ; End of events
 	const_next $A00

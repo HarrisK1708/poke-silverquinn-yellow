@@ -33,10 +33,10 @@ from faultlib import RepoCopy, Results, tail  # noqa: E402
 SUMMARY = re.compile(r"SINGLE-SAVE obtainable \(no link trades\):\s+(\d+)/(\d+)")
 
 # species, map objects file (the static's object_event), level
-ENCOUNTERS = [("SILVER", "data/maps/objects/RockTunnelB1F.asm", 50),
+ENCOUNTERS = [("SILVER", "data/maps/objects/RockTunnelB1F.asm", 25),
               ("QUINN", "data/maps/objects/ViridianForest.asm", 10),
-              ("RAYA", "data/maps/objects/CeruleanCaveB1F.asm", 50),
-              ("MEW", "data/maps/objects/CeruleanCaveB1F.asm", 30)]
+              ("RAYA", "data/maps/objects/SeafoamIslandsB4F.asm", 45),
+              ("MEW", "data/maps/objects/CeruleanCaveB1F.asm", 50)]
 
 IE = "engine/items/item_effects.asm"
 PS = "engine/pikachu/pikachu_status.asm"

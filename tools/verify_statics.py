@@ -5,10 +5,10 @@ the built pokeyellow.gbc, plus a save round trip per species. Generalises
 tools/verify_mew.py (same warp-and-place harness) to a data table.
 
 Statics (from data/maps/objects/*.asm; species/level/tile are read from there):
-  SILVER  Rock Tunnel B1F     EVENT_BEAT_SILVER  TOGGLE_SILVER   Lv50
-  QUINN   Viridian Forest     EVENT_BEAT_QUINN   TOGGLE_QUINN    Lv50
-  RAYA    Cerulean Cave B1F   EVENT_BEAT_RAYA    TOGGLE_RAYA     Lv50
-  MEW     Cerulean Cave B1F   EVENT_BEAT_MEW     TOGGLE_MEW      Lv30
+  SILVER  Rock Tunnel B1F     EVENT_BEAT_SILVER  TOGGLE_SILVER   Lv25
+  QUINN   Viridian Forest     EVENT_BEAT_QUINN   TOGGLE_QUINN    Lv10
+  RAYA    Seafoam Islands B4F EVENT_BEAT_RAYA    TOGGLE_RAYA     Lv45
+  MEW     Cerulean Cave B1F   EVENT_BEAT_MEW     TOGGLE_MEW      Lv50
 
 Placement (per static, from one shared bedroom snapshot):
   Boot a temp ROM copy (the repo's .ram/.state are never touched), play the
@@ -63,10 +63,10 @@ PLAYER_DIR_DOWN = None  # set in main() from constants/sprite_data_constants.asm
 
 # species, map file, map constant, text constant, expected level
 STATICS = [
-    ("SILVER", "RockTunnelB1F", "ROCK_TUNNEL_B1F", "TEXT_ROCKTUNNELB1F_SILVER", 50),
+    ("SILVER", "RockTunnelB1F", "ROCK_TUNNEL_B1F", "TEXT_ROCKTUNNELB1F_SILVER", 25),
     ("QUINN", "ViridianForest", "VIRIDIAN_FOREST", "TEXT_VIRIDIANFOREST_QUINN", 10),
-    ("RAYA", "CeruleanCaveB1F", "CERULEAN_CAVE_B1F", "TEXT_CERULEANCAVEB1F_RAYA", 50),
-    ("MEW", "CeruleanCaveB1F", "CERULEAN_CAVE_B1F", "TEXT_CERULEANCAVEB1F_MEW", 30),
+    ("RAYA", "SeafoamIslandsB4F", "SEAFOAM_ISLANDS_B4F", "TEXT_SEAFOAMISLANDSB4F_RAYA", 45),
+    ("MEW", "CeruleanCaveB1F", "CERULEAN_CAVE_B1F", "TEXT_CERULEANCAVEB1F_MEW", 50),
 ]
 BAG = [("MASTER_BALL", 1), ("POTION", 7), ("ESCAPE_ROPE", 3)]
 MONEY_BCD = [0x12, 0x34, 0x56]

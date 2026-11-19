@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from faultlib import RepoCopy, Results, need_pyboy, tail  # noqa: E402
 
 HEADERS = {"SILVER": "scripts/RockTunnelB1F.asm", "QUINN": "scripts/ViridianForest.asm",
-           "RAYA": "scripts/CeruleanCaveB1F.asm", "MEW": "scripts/CeruleanCaveB1F.asm"}
+           "RAYA": "scripts/SeafoamIslandsB4F.asm", "MEW": "scripts/CeruleanCaveB1F.asm"}
 FLAG_CHECK = "(5) flag-set suppresses re-encounter"
 
 

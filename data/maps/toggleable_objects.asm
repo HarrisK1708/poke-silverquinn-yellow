@@ -399,7 +399,8 @@ ToggleableObjectStates:
 	toggle_object_state CERULEANCAVEB1F_MAX_REVIVE,  ON
 	toggle_object_state CERULEANCAVEB1F_MAX_ELIXER,  ON
 	toggle_object_state CERULEANCAVEB1F_MEW,         ON
-	toggle_object_state CERULEANCAVEB1F_RAYA,        ON
+	toggle_object_state 7,                           ON ; retired: Raya moved to Seafoam B4F; no object 7 here,
+	                                                    ; slot kept so later toggle indices (and saves) don't shift
 
 	toggleable_objects_for VICTORY_ROAD_1F
 	toggle_object_state VICTORYROAD1F_TM_SKY_ATTACK, ON
@@ -430,6 +431,7 @@ ToggleableObjectStates:
 	toggle_object_state SEAFOAMISLANDSB4F_BOULDER1, OFF
 	toggle_object_state SEAFOAMISLANDSB4F_BOULDER2, OFF
 	toggle_object_state SEAFOAMISLANDSB4F_ARTICUNO, ON
+	toggle_object_state SEAFOAMISLANDSB4F_RAYA,     ON
 
 ; unreferenced
 	db BLUES_HOUSE, BLUESHOUSE_DAISY1,   ON
