@@ -23,6 +23,7 @@ RockTunnelB1F_TextPointers:
 	dw_const RockTunnelB1FCooltrainerF2Text, TEXT_ROCKTUNNELB1F_COOLTRAINER_F2
 	dw_const RockTunnelB1FHiker3Text,        TEXT_ROCKTUNNELB1F_HIKER3
 	dw_const RockTunnelB1FSuperNerd3Text,    TEXT_ROCKTUNNELB1F_SUPER_NERD3
+	dw_const RockTunnelB1FSilverText,        TEXT_ROCKTUNNELB1F_SILVER
 
 RockTunnel2TrainerHeaders:
 	def_trainers
@@ -42,6 +43,8 @@ RockTunnel2TrainerHeader6:
 	trainer EVENT_BEAT_ROCK_TUNNEL_2_TRAINER_6, 3, RockTunnelB1FHiker3BattleText, RockTunnelB1FHiker3EndBattleText, RockTunnelB1FHiker3AfterBattleText
 RockTunnel2TrainerHeader7:
 	trainer EVENT_BEAT_ROCK_TUNNEL_2_TRAINER_7, 3, RockTunnelB1FSuperNerd3BattleText, RockTunnelB1FSuperNerd3EndBattleText, RockTunnelB1FSuperNerd3AfterBattleText
+SilverTrainerHeader:
+	trainer EVENT_BEAT_SILVER, 0, SilverBattleText, SilverBattleText, SilverBattleText
 	db -1 ; end
 
 RockTunnelB1FCooltrainerF1Text:
@@ -187,3 +190,17 @@ RockTunnelB1FSuperNerd3EndBattleText:
 RockTunnelB1FSuperNerd3AfterBattleText:
 	text_far _RockTunnelB1FSuperNerd3AfterBattleText
 	text_end
+
+RockTunnelB1FSilverText:
+	text_asm
+	ld hl, SilverTrainerHeader
+	call TalkToTrainer
+	jp TextScriptEnd
+
+SilverBattleText:
+	text_far _SilverBattleText
+	text_asm
+	ld a, SILVER
+	call PlayCry
+	call WaitForSoundToFinish
+	jp TextScriptEnd

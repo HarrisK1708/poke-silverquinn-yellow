@@ -25,6 +25,7 @@ ViridianForest_TextPointers:
 	dw_const PickUpItemText,                    TEXT_VIRIDIANFOREST_POTION2
 	dw_const PickUpItemText,                    TEXT_VIRIDIANFOREST_POKE_BALL
 	dw_const ViridianForestYoungster6Text,      TEXT_VIRIDIANFOREST_YOUNGSTER6
+	dw_const ViridianForestQuinnText,           TEXT_VIRIDIANFOREST_QUINN
 	dw_const ViridianForestTrainerTips1Text,    TEXT_VIRIDIANFOREST_TRAINER_TIPS1
 	dw_const ViridianForestUseAntidoteSignText, TEXT_VIRIDIANFOREST_USE_ANTIDOTE_SIGN
 	dw_const ViridianForestTrainerTips2Text,    TEXT_VIRIDIANFOREST_TRAINER_TIPS2
@@ -44,6 +45,8 @@ ViridianForestTrainerHeader3:
 	trainer EVENT_BEAT_VIRIDIAN_FOREST_TRAINER_3, 0, ViridianForestCooltrainerFBattleText, ViridianForestCooltrainerFEndBattleText, ViridianForestCooltrainerFAfterBattleText
 ViridianForestTrainerHeader4:
 	trainer EVENT_BEAT_VIRIDIAN_FOREST_TRAINER_4, 4, ViridianForestYoungster5BattleText, ViridianForestYoungster5EndBattleText, ViridianForestYoungster5AfterBattleText
+QuinnTrainerHeader:
+	trainer EVENT_BEAT_QUINN, 0, QuinnBattleText, QuinnBattleText, QuinnBattleText
 	db -1 ; end
 
 ViridianForestYoungster1Text:
@@ -140,6 +143,20 @@ ViridianForestYoungster5AfterBattleText:
 ViridianForestYoungster6Text:
 	text_far _ViridianForestYoungster6Text
 	text_end
+
+ViridianForestQuinnText:
+	text_asm
+	ld hl, QuinnTrainerHeader
+	call TalkToTrainer
+	jp TextScriptEnd
+
+QuinnBattleText:
+	text_far _QuinnBattleText
+	text_asm
+	ld a, QUINN
+	call PlayCry
+	call WaitForSoundToFinish
+	jp TextScriptEnd
 
 ViridianForestTrainerTips1Text:
 	text_asm

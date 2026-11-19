@@ -8,7 +8,7 @@ Route2WildMons:
 	db  5, PIDGEY
 	db  6, NIDORAN_M
 	db  6, NIDORAN_F
-	db  7, PIDGEY
+	db 10, BEEDRILL
 	db  7, PIDGEY
 	end_grass_wildmons
 

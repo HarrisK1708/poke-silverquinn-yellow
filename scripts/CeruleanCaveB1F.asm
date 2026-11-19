@@ -20,11 +20,17 @@ CeruleanCaveB1F_TextPointers:
 	dw_const PickUpItemText,            TEXT_CERULEANCAVEB1F_ULTRA_BALL2
 	dw_const PickUpItemText,            TEXT_CERULEANCAVEB1F_MAX_REVIVE
 	dw_const PickUpItemText,            TEXT_CERULEANCAVEB1F_MAX_ELIXER
+	dw_const CeruleanCaveB1FMewText,    TEXT_CERULEANCAVEB1F_MEW
+	dw_const CeruleanCaveB1FRayaText,   TEXT_CERULEANCAVEB1F_RAYA
 
 CeruleanCaveB1FTrainerHeaders:
 	def_trainers
 MewtwoTrainerHeader:
 	trainer EVENT_BEAT_MEWTWO, 0, MewtwoBattleText, MewtwoBattleText, MewtwoBattleText
+MewTrainerHeader:
+	trainer EVENT_BEAT_MEW, 0, MewBattleText, MewBattleText, MewBattleText
+RayaTrainerHeader:
+	trainer EVENT_BEAT_RAYA, 0, RayaBattleText, RayaBattleText, RayaBattleText
 	db -1 ; end
 
 CeruleanCaveB1FMewtwoText:
@@ -37,6 +43,34 @@ MewtwoBattleText:
 	text_far _MewtwoBattleText
 	text_asm
 	ld a, MEWTWO
+	call PlayCry
+	call WaitForSoundToFinish
+	jp TextScriptEnd
+
+CeruleanCaveB1FMewText:
+	text_asm
+	ld hl, MewTrainerHeader
+	call TalkToTrainer
+	jp TextScriptEnd
+
+MewBattleText:
+	text_far _MewBattleText
+	text_asm
+	ld a, MEW
+	call PlayCry
+	call WaitForSoundToFinish
+	jp TextScriptEnd
+
+CeruleanCaveB1FRayaText:
+	text_asm
+	ld hl, RayaTrainerHeader
+	call TalkToTrainer
+	jp TextScriptEnd
+
+RayaBattleText:
+	text_far _RayaBattleText
+	text_asm
+	ld a, RAYA
 	call PlayCry
 	call WaitForSoundToFinish
 	jp TextScriptEnd

@@ -380,3 +380,14 @@ SECTION "Pics 7", ROMX
 RedPicBack::       INCBIN "gfx/player/redb.pic"
 OldManPicBack::    INCBIN "gfx/battle/oldmanb.pic"
 ProfOakPicBack::   INCBIN "gfx/battle/prof.oakb.pic"
+
+
+SECTION "Pics 8", ROMX
+
+; Bank chosen in UncompressMonSprite by the SILVER..RAYA id range.
+SilverPicFront::      INCBIN "gfx/pokemon/front/silver.pic"
+SilverPicBack::       INCBIN "gfx/pokemon/back/silverb.pic"
+QuinnPicFront::       INCBIN "gfx/pokemon/front/quinn.pic"
+QuinnPicBack::        INCBIN "gfx/pokemon/back/quinnb.pic"
+RayaPicFront::        INCBIN "gfx/pokemon/front/raya.pic"
+RayaPicBack::         INCBIN "gfx/pokemon/back/rayab.pic"

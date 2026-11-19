@@ -4,7 +4,7 @@ Route8WildMons:
 	db 22, PIDGEY
 	db 20, RATTATA
 	db 15, ABRA
-	db 19, ABRA
+	db 19, EEVEE
 	db 24, PIDGEOTTO
 	db 19, JIGGLYPUFF
 	db 24, JIGGLYPUFF

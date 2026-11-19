@@ -60,9 +60,9 @@ PokedexEntryPointers:
 	dw SeelDexEntry
 	dw DiglettDexEntry
 	dw TaurosDexEntry
-	dw MissingNoDexEntry
-	dw MissingNoDexEntry
-	dw MissingNoDexEntry
+	dw SilverDexEntry
+	dw QuinnDexEntry
+	dw RayaDexEntry
 	dw FarfetchdDexEntry
 	dw VenonatDexEntry
 	dw DragoniteDexEntry
@@ -1252,6 +1252,27 @@ MewDexEntry:
 	db 1,4
 	dw 90
 	text_far _MewDexEntry
+	text_end
+
+SilverDexEntry:
+	db "LOYAL@"
+	db 1,2
+	dw 154
+	text_far _SilverDexEntry
+	text_end
+
+QuinnDexEntry:
+	db "LOYAL@"
+	db 1,3
+	dw 176
+	text_far _QuinnDexEntry
+	text_end
+
+RayaDexEntry:
+	db "LOYAL@"
+	db 1,0
+	dw 110
+	text_far _RayaDexEntry
 	text_end
 
 MissingNoDexEntry:

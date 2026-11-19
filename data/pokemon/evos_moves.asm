@@ -70,9 +70,9 @@ EvosMovesPointerTable:
 	dw SeelEvosMoves
 	dw DiglettEvosMoves
 	dw TaurosEvosMoves
-	dw MissingNo3DEvosMoves
-	dw MissingNo3EEvosMoves
-	dw MissingNo3FEvosMoves
+	dw SilverEvosMoves
+	dw QuinnEvosMoves
+	dw RayaEvosMoves
 	dw FarfetchdEvosMoves
 	dw VenonatEvosMoves
 	dw DragoniteEvosMoves
@@ -628,7 +628,7 @@ SlowpokeEvosMoves:
 
 KadabraEvosMoves:
 ; Evolutions
-	db EVOLVE_TRADE, 1, ALAKAZAM
+	db EVOLVE_LEVEL, 37, ALAKAZAM
 	db 0
 ; Learnset
 	db 16, CONFUSION
@@ -641,7 +641,7 @@ KadabraEvosMoves:
 
 GravelerEvosMoves:
 ; Evolutions
-	db EVOLVE_TRADE, 1, GOLEM
+	db EVOLVE_LEVEL, 37, GOLEM
 	db 0
 ; Learnset
 	db 11, DEFENSE_CURL
@@ -667,7 +667,7 @@ ChanseyEvosMoves:
 
 MachokeEvosMoves:
 ; Evolutions
-	db EVOLVE_TRADE, 1, MACHAMP
+	db EVOLVE_LEVEL, 37, MACHAMP
 	db 0
 ; Learnset
 	db 20, LOW_KICK
@@ -883,22 +883,43 @@ TaurosEvosMoves:
 	db 51, TAKE_DOWN
 	db 0
 
-MissingNo3DEvosMoves:
+SilverEvosMoves:
 ; Evolutions
 	db 0
 ; Learnset
+	db 10, ROCK_THROW
+	db 18, STOMP
+	db 25, DIG
+	db 33, REST
+	db 40, BODY_SLAM
+	db 47, EARTHQUAKE
+	db 54, ROCK_SLIDE
+	db 60, FISSURE
 	db 0
 
-MissingNo3EEvosMoves:
+QuinnEvosMoves:
 ; Evolutions
 	db 0
 ; Learnset
+	db 12, LEECH_SEED
+	db 20, STUN_SPORE
+	db 26, SLEEP_POWDER
+	db 32, RAZOR_LEAF
+	db 38, MEGA_DRAIN
+	db 44, PETAL_DANCE
+	db 50, SOLARBEAM
 	db 0
 
-MissingNo3FEvosMoves:
+RayaEvosMoves:
 ; Evolutions
 	db 0
 ; Learnset
+	db 15, THUNDER_WAVE
+	db 22, AGILITY
+	db 30, SLAM
+	db 38, DRAGON_RAGE
+	db 46, WING_ATTACK
+	db 54, HYPER_BEAM
 	db 0
 
 FarfetchdEvosMoves:
@@ -1720,7 +1741,7 @@ MissingNo92EvosMoves:
 
 HaunterEvosMoves:
 ; Evolutions
-	db EVOLVE_TRADE, 1, GENGAR
+	db EVOLVE_LEVEL, 37, GENGAR
 	db 0
 ; Learnset
 	db 29, HYPNOSIS

@@ -3,10 +3,10 @@ PokemonMansion2FWildMons:
 	db 37, RATTATA
 	db 37, RATICATE
 	db 26, GRIMER
-	db 29, GRIMER
+	db 29, KOFFING
 	db 40, RATTATA
 	db 40, RATICATE
-	db 32, GRIMER
+	db 35, WEEZING
 	db 35, GRIMER
 	db 35, MUK
 	db 38, MUK

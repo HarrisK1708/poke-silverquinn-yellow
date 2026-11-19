@@ -40,6 +40,10 @@ IF DEF(_DEBUG)
 	ld hl, wPartyMon4Moves + 2
 	ld [hl], a
 
+	; Mark Pikachu as the starter, like OaksLab does (see IsThisMonStarterPikachu).
+	ld a, LIGHT_BALL_GSC
+	ld [wPartyMon4CatchRate], a
+
 	; Snorlax gets four HM moves.
 	ld hl, wPartyMon1Moves
 	ld a, FLY
@@ -95,7 +99,7 @@ IF DEF(_DEBUG)
 
 DebugSetPokedexEntries:
 IF NUM_POKEMON / 8 != 0
-	ld b, NUM_POKEMON / 8 ; 151 / 8 == 18
+	ld b, NUM_POKEMON / 8 ; 154 / 8 == 19
 	ld a, %11111111
 .loop
 	ld [hli], a
@@ -103,7 +107,7 @@ IF NUM_POKEMON / 8 != 0
 	jr nz, .loop
 ENDC
 IF NUM_POKEMON % 8 != 0
-	ld [hl], (1 << (NUM_POKEMON % 8)) - 1 ; (1 << 151 % 8)) - 1 == %01111111
+	ld [hl], (1 << (NUM_POKEMON % 8)) - 1 ; (1 << (154 % 8)) - 1 == %00000011
 ENDC
 	ret
 

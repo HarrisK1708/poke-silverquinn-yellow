@@ -50,6 +50,13 @@ IsStarterPikachuAliveInOurParty::
 .sameOT
 	pop bc
 	pop de
+; the starter is also marked by LIGHT_BALL_GSC in its catch rate byte (set in
+; OaksLab); any other own-OT Pikachu is skipped and the scan continues
+	ld hl, MON_CATCH_RATE - MON_OTID
+	add hl, de
+	ld a, [hl]
+	cp LIGHT_BALL_GSC
+	jr nz, .curMonNotPlayerPikachu
 	ld h, d
 	ld l, e
 	ld bc, wPartyMon1HP - wPartyMon1OTID
@@ -81,6 +88,15 @@ IsThisMonStarterPikachu:
 	call AddNTimes
 	ld a, [hl]
 	cp STARTER
+	jr nz, .notPlayerPikachu
+; the starter is also marked by LIGHT_BALL_GSC in its catch rate byte (set in
+; OaksLab), which distinguishes it from any other own-OT Pikachu
+	push hl
+	ld bc, MON_CATCH_RATE
+	add hl, bc
+	ld a, [hl]
+	pop hl
+	cp LIGHT_BALL_GSC
 	jr nz, .notPlayerPikachu
 	ld bc, wPartyMon1OTID - wPartyMon1
 	add hl, bc

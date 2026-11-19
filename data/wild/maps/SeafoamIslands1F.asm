@@ -4,7 +4,7 @@ SeafoamIslands1FWildMons:
 	db 25, KRABBY
 	db 27, KRABBY
 	db 27, ZUBAT
-	db 36, ZUBAT
+	db 30, JYNX
 	db 28, SLOWPOKE
 	db 30, SLOWPOKE
 	db  9, ZUBAT

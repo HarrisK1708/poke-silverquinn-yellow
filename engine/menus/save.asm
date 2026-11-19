@@ -38,7 +38,7 @@ LoadMainData:
 	vc_hook Unknown_save_limit
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum]
 	cp c
@@ -47,7 +47,7 @@ LoadMainData:
 ; If the computed checksum didn't match the saved on, try again.
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum]
 	cp c
@@ -86,7 +86,7 @@ LoadCurrentBoxData:
 	ld [rRAMB], a
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum]
 	cp c
@@ -104,7 +104,7 @@ LoadPartyAndDexData:
 	ld [rRAMB], a
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum]
 	cp c
@@ -225,7 +225,7 @@ SaveMainData:
 	ld [sTileAnimations], a
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld [sMainDataCheckSum], a
 	call DisableSRAM
 	ret
@@ -240,7 +240,7 @@ SaveCurrentBoxData:
 	call CopyData
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld [sMainDataCheckSum], a
 	call DisableSRAM
 	ret
@@ -266,7 +266,7 @@ SavePartyAndDexData:
 	ld [de], a
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld [sMainDataCheckSum], a
 	call DisableSRAM
 	ret
@@ -278,9 +278,16 @@ SaveGameData::
 	call SaveCurrentBoxData
 	jp SavePartyAndDexData
 
+; Checksum of the main save data (sGameData), seeded with SAVE_FORMAT_SALT so that
+; saves written with an older layout fail the check instead of loading shifted.
+CalcGameDataCheckSum:
+	ld d, SAVE_FORMAT_SALT
+	jr CalcCheckSumFromD
+
 CalcCheckSum:
 ;Check Sum (result[1 byte] is complemented)
 	ld d, 0
+CalcCheckSumFromD: ; d = starting total
 .loop
 	ld a, [hli]
 	add d
@@ -595,7 +602,7 @@ CheckPreviousSaveFile:
 	jr z, .next
 	ld hl, sGameData
 	ld bc, sGameDataEnd - sGameData
-	call CalcCheckSum
+	call CalcGameDataCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum]
 	cp c
