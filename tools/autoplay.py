@@ -18,9 +18,21 @@ How to use it
      or grind headless at maximum speed:
          python tools/autoplay.py --state pokeyellow.gbc.state --max-battles 50
 
+Speed: --speed 0 = unlimited (default), 1 = real time, 2 = double, ...
+
+Window mode (--window): press M to toggle AUTO / MANUAL. In MANUAL the bot
+stops sending input (it only keeps counting battles) and you play with PyBoy's
+keys: arrows, A = a, B = s, START = Enter, SELECT = Backspace; emulation drops
+to real time so it is playable. Press M again to hand back: the bot re-plans
+from wherever you left it (walking back to the last grass tile if needed).
+The mode is shown in the window title and the log. (P is PyBoy's own pause
+key, which is why the toggle is M. PyBoy's Z/X state keys act on the temp
+copy, so use --save-state to keep a state.)
+
 Stop conditions: --max-battles N, --max-minutes M (wall clock), Ctrl-C, the
-whole party fainting, or an unrecoverable stall. The bot never runs from a
-battle and never throws balls.
+whole party fainting, a failed Pokemon Center trip, or an unrecoverable stall.
+The bot never throws balls; it only runs from battles on the way to a
+Pokemon Center.
 
 Policies
   * Moves: the first move slot with PP left that is not disabled, preferring
@@ -42,6 +54,22 @@ Policies
     picking a move to forget needs a policy the bot cannot judge.
   * Evolution: allowed (A only, B is never pressed while "is evolving" is on
     screen); --no-evolve cancels it with B.
+  * Pokemon Center (on by default, --no-pc-heal to disable): when no healthy
+    party member has a damaging move with PP, or every healthy one is at or
+    below --heal-below HP with no healing item in the bag, the bot walks to
+    the nearest Pokemon Center, talks to the nurse (HEAL), and walks back to
+    the grass tile it was grinding on. Paths are a breadth-first search over
+    every map's step grid, built from the sources the ROM is assembled from
+    (maps/*.blk + gfx/blocksets/*.bst, collision and tile-pair collision
+    lists, ledges, door/warp tiles, warp_events, map connections), with the
+    live NPC positions from RAM as obstacles. A blocked step is marked and
+    re-planned; wild battles on the way to the Pokemon Center are run from.
+    No path, more than --trip-replans re-plans, or more than --trip-limit
+    seconds of game time on one leg stops the bot with the reason, so it
+    never soft-locks. Each phase is logged ("out of PP -> heading to a
+    Pokemon Center", "healed", "back to grinding").
+  * Wandering off the grass (or being left off it in MANUAL) for a few steps
+    makes the bot path back to the last grass tile it stood on.
   * Every menu state has a timeout; if the screen stops changing the bot backs
     out with B (never during an allowed evolution), and gives up with a report
     after --stall-seconds of emulated time without progress.
@@ -94,11 +122,12 @@ Quick start:
      and press Z to make a save state (written to pokeyellow.gbc.state).
   2. Watch it:     python tools/autoplay.py --state pokeyellow.gbc.state --window
      Max speed:    python tools/autoplay.py --state pokeyellow.gbc.state --headless --max-battles 50
+  In the window, M toggles AUTO / MANUAL. --speed 1 = real time, 2 = double, 0 = unlimited.
   No state yet? Build a test one:
                    python tools/autoplay.py --make-test-state /tmp/grind.state
 """
 
-NEED_SYMS = ["wTileMap", "wIsInBattle", "wXCoord", "wYCoord", "wCurrentMenuItem", "wListScrollOffset",
+NEED_SYMS = ["wCurMap", "wLastMap", "wNumSprites", "wSpriteStateData1", "wSpriteStateData2", "wTileMap", "wIsInBattle", "wXCoord", "wYCoord", "wCurrentMenuItem", "wListScrollOffset",
              "wPartyCount", "wPartySpecies", "wPartyMon1", "wPartyMon2", "wPartyMon1HP", "wPartyMon1MaxHP",
              "wPartyMon1Exp", "wPartyMon1Level", "wPlayerMonNumber", "wBattleMonHP", "wBattleMonMaxHP",
              "wBattleMonMoves", "wBattleMonPP", "wPlayerDisabledMove", "wEnemyMonSpecies", "wEnemyMonLevel",
@@ -122,6 +151,247 @@ def u16(m, a):
 
 def u24(m, a):
     return m[a] << 16 | m[a + 1] << 8 | m[a + 2]
+
+
+# ---------------------------------------------------------------------------
+# World map: collision, ledges, warps and connections for pathfinding
+# ---------------------------------------------------------------------------
+
+def _hex(v):
+    v = v.strip()
+    return int(v[1:], 16) if v.startswith("$") else int(v)
+
+
+DIRS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+CONN_DIR = {"north": "up", "south": "down", "west": "left", "east": "right"}
+
+
+class World:
+    """Every map's step-tile grid, built from the same sources the ROM is assembled
+    from (maps/*.blk, gfx/blocksets/*.bst, data/maps/headers + objects,
+    data/tilesets/*): collision (passable tiles), tile-pair collisions, ledges,
+    door/warp tiles, warp_events and map connections. Coordinates are the game's
+    step coordinates (wXCoord/wYCoord); a step square's collision tile is its
+    lower-left 8x8 tile, as in the game's collision check."""
+
+    def __init__(self):
+        self.map_ids = ve.load_consts("constants/map_constants.asm")
+        self.map_names = {v: k for k, v in self.map_ids.items()}
+        self.last_map = self.map_ids.get("LAST_MAP", 0xFF)
+        self.size = {}
+        for c in ve.lines("constants/map_constants.asm"):
+            m = re.match(r"map_const\s+(\w+),\s*(\d+),\s*(\d+)", c)
+            if m:
+                self.size[self.map_ids[m.group(1)]] = (int(m.group(2)), int(m.group(3)))
+        tileset_ids = ve.load_consts("constants/tileset_constants.asm")
+        self._load_tilesets(tileset_ids)
+        blk_file = self._labels_to_file("maps.asm", r"(\w+)_Blocks:", r'INCBIN\s+"([^"]+)"')
+        self.maps = {}
+        root = os.path.join(ROOT, "data/maps/headers")
+        for fn in sorted(os.listdir(root)):
+            info = {"conn": {}, "warps": [], "objects": []}
+            for c in ve.lines(f"data/maps/headers/{fn}"):
+                m = re.match(r"map_header\s+(\w+),\s*(\w+),\s*(\w+)", c)
+                if m:
+                    info["label"], const, ts = m.groups()
+                    info["id"], info["tileset"] = self.map_ids[const], tileset_ids[ts]
+                m = re.match(r"connection\s+(\w+),\s*\w+,\s*(\w+),\s*(-?\d+)", c)
+                if m:
+                    info["conn"][CONN_DIR[m.group(1)]] = (self.map_ids[m.group(2)], int(m.group(3)))
+            if "id" not in info or info["label"] not in blk_file:
+                continue
+            obj = f"data/maps/objects/{info['label']}.asm"
+            if os.path.exists(os.path.join(ROOT, obj)):
+                for c in ve.lines(obj):
+                    m = re.match(r"warp_event\s+(\d+),\s*(\d+),\s*(\w+),\s*(\d+)", c)
+                    if m:
+                        dest = self.last_map if m.group(3) == "LAST_MAP" else self.map_ids[m.group(3)]
+                        info["warps"].append((int(m.group(1)), int(m.group(2)), dest, int(m.group(4)) - 1))
+                    m = re.match(r"object_event\s+(\d+),\s*(\d+),\s*(\w+)", c)
+                    if m:
+                        info["objects"].append((int(m.group(1)), int(m.group(2)), m.group(3)))
+            w, h = self.size[info["id"]]
+            with open(os.path.join(ROOT, blk_file[info["label"]]), "rb") as f:
+                info["blk"] = f.read()
+            info["w"], info["h"] = w, h
+            info["warp_at"] = {(x, y): i for i, (x, y, _, _) in enumerate(info["warps"])}
+            self.maps[info["id"]] = info
+        # Pokemon Centers: maps with a nurse; talk to her across the counter from below
+        self.pc_targets = {}
+        for mid, info in self.maps.items():
+            if self.tilesets[info["tileset"]]["name"] not in ("Pokecenter", "Lobby"):
+                continue                 # e.g. SILPH CO 9F's nurse is not a Pokemon Center counter
+            for x, y, sprite in info["objects"]:
+                if sprite == "SPRITE_NURSE":
+                    for k in (1, 2, 3):
+                        if self.passable(mid, x, y + k):
+                            self.pc_targets[mid] = (x, y + k)
+                            break
+
+    # ---- source parsing
+    def _labels_to_file(self, rel, label_re, file_re):
+        """Map every label of a run of labels to the file INCBIN'd after them."""
+        out, pending = {}, []
+        for c in ve.lines(rel):
+            for lab in re.findall(label_re, c):
+                pending.append(lab)
+            m = re.search(file_re, c)
+            if m and pending:
+                for lab in pending:
+                    out[lab] = m.group(1)
+                pending = []
+        return out
+
+    def _label_lists(self, rel, label_re, data_re):
+        """Map every label of a run of labels to the byte list of the data macro after them."""
+        out, pending = {}, []
+        for c in ve.lines(rel):
+            m = re.match(label_re, c)
+            if m:
+                pending.append(m.group(1))
+                continue
+            m = re.match(data_re, c)
+            if m and pending:
+                vals = [_hex(v) for v in m.group(1).split(",")] if m.group(1).strip() else []
+                for lab in pending:
+                    out[lab] = set(vals)
+                pending = []
+        return out
+
+    def _load_tilesets(self, tileset_ids):
+        names = [re.match(r"tileset\s+(\w+),", c).group(1) for c in ve.lines("data/tilesets/tileset_headers.asm")
+                 if re.match(r"tileset\s+\w+,", c)]
+        bst = self._labels_to_file("gfx/tilesets.asm", r"(\w+)_Block::", r'INCBIN\s+"([^"]+\.bst)"')
+        coll = self._label_lists("data/tilesets/collision_tile_ids.asm", r"(\w+)_Coll::", r"coll_tiles\s*(.*)")
+        warp_lists = self._label_lists("data/tilesets/warp_tile_ids.asm", r"\.(\w+):", r"warp_tiles\s*(.*)")
+        warp_order = [m.group(1) for c in ve.lines("data/tilesets/warp_tile_ids.asm")
+                      for m in [re.match(r"dw\s+\.(\w+)", c)] if m]
+        door_lists = self._label_lists("data/tilesets/door_tile_ids.asm", r"\.(\w+):", r"door_tiles\s*(.*)")
+        door_of = {tileset_ids[m.group(1)]: m.group(2) for c in ve.lines("data/tilesets/door_tile_ids.asm")
+                   for m in [re.match(r"dbw\s+(\w+),\s*\.(\w+)", c)] if m}
+        self.tilesets = {}
+        for i, n in enumerate(names):
+            with open(os.path.join(ROOT, bst[n]), "rb") as f:
+                blocks = f.read()
+            self.tilesets[i] = {"name": n, "bst": blocks, "coll": coll[n],
+                                "auto_warp": warp_lists.get(warp_order[i], set()) | door_lists.get(door_of.get(i), set())}
+        self.ledges = set()
+        for c in ve.lines("data/tilesets/ledge_tiles.asm"):
+            m = re.match(r"db\s+SPRITE_FACING_(\w+),\s*(\$\w+),\s*(\$\w+),", c)
+            if m:
+                self.ledges.add((m.group(1).lower(), _hex(m.group(2)), _hex(m.group(3))))
+        self.pairs = set()
+        land = False
+        for c in ve.lines("data/tilesets/pair_collision_tile_ids.asm"):
+            if c.startswith("TilePairCollisionsLand"):
+                land = True
+            elif c.startswith("TilePairCollisionsWater"):
+                land = False
+            m = re.match(r"db\s+(\w+),\s*(\$\w+),\s*(\$\w+)", c)
+            if land and m:
+                t = tileset_ids[m.group(1)]
+                a, b = _hex(m.group(2)), _hex(m.group(3))
+                self.pairs |= {(t, a, b), (t, b, a)}
+
+    # ---- queries
+    def tile(self, mid, x, y):
+        info = self.maps[mid]
+        w = info["w"]
+        block = info["blk"][(y // 2) * w + x // 2]
+        return self.tilesets[info["tileset"]]["bst"][block * 16 + ((y % 2) * 2 + 1) * 4 + (x % 2) * 2]
+
+    def inside(self, mid, x, y):
+        info = self.maps.get(mid)
+        return info is not None and 0 <= x < info["w"] * 2 and 0 <= y < info["h"] * 2
+
+    def passable(self, mid, x, y):
+        return self.inside(mid, x, y) and self.tile(mid, x, y) in self.tilesets[self.maps[mid]["tileset"]]["coll"]
+
+    def name(self, mid):
+        return self.map_names.get(mid, f"${mid:02X}")
+
+    def exit_dir(self, mid, x, y, fallback):
+        """Direction to press on a warp tile that does not warp by itself: outwards at a map edge."""
+        info = self.maps[mid]
+        if y == info["h"] * 2 - 1:
+            return "down"
+        if y == 0:
+            return "up"
+        if x == 0:
+            return "left"
+        if x == info["w"] * 2 - 1:
+            return "right"
+        return fallback
+
+    def neighbours(self, st, blocked):
+        """(step, next state) for each legal move from st = (map, x, y, last map)."""
+        mid, x, y, last = st
+        info = self.maps[mid]
+        ts = info["tileset"]
+        here = self.tile(mid, x, y)
+        for d, (dx, dy) in DIRS.items():
+            nx, ny, nm, kind = x + dx, y + dy, mid, "walk"
+            if not self.inside(mid, nx, ny):
+                if d not in info["conn"]:
+                    continue
+                nm, off = info["conn"][d]
+                if nm not in self.maps:
+                    continue
+                w2, h2 = self.maps[nm]["w"], self.maps[nm]["h"]
+                if d in ("up", "down"):
+                    nx, ny = x - 2 * off, (h2 * 2 - 1 if d == "up" else 0)
+                else:
+                    nx, ny = (w2 * 2 - 1 if d == "left" else 0), y - 2 * off
+                kind = "conn"
+                if not self.passable(nm, nx, ny) or (nm, nx, ny) in blocked:
+                    continue
+            else:
+                front = self.tile(mid, nx, ny)
+                if (d, here, front) in self.ledges:
+                    nx, ny, kind = nx + dx, ny + dy, "ledge"
+                    if not self.passable(mid, nx, ny) or (mid, nx, ny) in blocked:
+                        continue
+                elif (not self.passable(mid, nx, ny) or (ts, here, front) in self.pairs
+                      or (mid, nx, ny) in blocked):
+                    continue
+            target = (nm, nx, ny)
+            nlast = last if nm == mid else mid
+            w = self.maps[nm]["warp_at"].get((nx, ny))
+            if w is not None:                       # stepping onto a warp tile takes the warp
+                _, _, dest, idx = self.maps[nm]["warps"][w]
+                dest = last if dest == self.last_map else dest
+                if dest not in self.maps or idx >= len(self.maps[dest]["warps"]):
+                    continue
+                dx_, dy_, _, _ = self.maps[dest]["warps"][idx]
+                auto = self.tile(nm, nx, ny) in self.tilesets[self.maps[nm]["tileset"]]["auto_warp"]
+                yield ({"dir": d, "target": target, "kind": "warp", "auto": auto,
+                        "exit": d if auto else self.exit_dir(nm, nx, ny, d)}, (dest, dx_, dy_, nm))
+            else:
+                yield {"dir": d, "target": target, "kind": kind}, (nm, nx, ny, nlast)
+
+    def path(self, start, goal, blocked=frozenset(), limit=300000):
+        """BFS from start (map, x, y, last) to the first state goal(state) accepts.
+        Returns [(step, state after step)], [] if already there, or None."""
+        from collections import deque
+        if goal(start):
+            return []
+        prev = {start: None}
+        q = deque([start])
+        while q and len(prev) < limit:
+            st = q.popleft()
+            for step, nxt in self.neighbours(st, blocked):
+                if nxt in prev:
+                    continue
+                prev[nxt] = (st, step)
+                if goal(nxt):
+                    out = []
+                    while prev[nxt] is not None:
+                        p, s_ = prev[nxt]
+                        out.append((s_, nxt))
+                        nxt = p
+                    return out[::-1]
+                q.append(nxt)
+        return None
 
 
 class Bot:
@@ -165,6 +435,18 @@ class Bot:
         self.evolving_seen = False
         self.grass_seen = False
         self.start_frame = None
+        # Pokemon Center trips
+        self.world = World() if args.pc_heal else None
+        self.trip = None
+        self.last_grass = None
+        self.offgrass = 0
+        self.heal_trips = 0
+        self.runs = 0
+        # manual override (window mode)
+        self.manual = False
+        self.hotkey = None
+        self.title_mark = -1
+        self.on_tick = None
 
     # ---------------------------------------------------------------- RAM
     def mon(self, i, field):
@@ -246,8 +528,35 @@ class Bot:
         self.tick(hold + after)
 
     def tick(self, n):
-        self.p.tick(n, self.args.window)
+        if self.args.speed or self.manual:
+            for _ in range(n):               # PyBoy's frame limiter runs once per tick() call
+                self.p.tick(1, self.args.window)
+        else:
+            self.p.tick(n, self.args.window)
         self.g.frames += n
+        if self.hotkey and self.g.frames // 60 != self.title_mark:   # PyBoy rewrites the title every 60 frames
+            self.title_mark = self.g.frames // 60
+            self.hotkey.set_title(self.title())
+
+    def title(self):
+        mode = "MANUAL (M: resume auto)" if self.manual else "AUTO (M: take over)"
+        return f"autoplay [{mode}] battles {self.battles} won {self.wins}"
+
+    def toggle_manual(self):
+        self.manual = not self.manual
+        if self.manual:
+            self.p.set_emulation_speed(1)        # playable speed while you have the controls
+            self.log(f"[MANUAL] automation paused at frame {self.g.frames}: you have the controls "
+                     "(press M to resume)")
+        else:
+            self.p.set_emulation_speed(self.args.speed)
+            self.log(f"[AUTO] automation resumed at frame {self.g.frames}")
+            self.wander_from, self.blocked, self.last_screen = None, 0, None
+            self.progress_frame = self.g.frames
+            if self.trip:
+                self.trip.update(plan=None, start=self.g.frames, fails=0)
+        if self.hotkey:
+            self.hotkey.set_title(self.title())
 
     def move_cursor_to_label(self, rows, label):
         """Battle-menu style grids: move ▶ to the cell whose text starts with label.
@@ -336,7 +645,7 @@ class Bot:
             outcome = "lost"
             self.losses += 1
         else:
-            outcome = "ended (enemy fled / other)"
+            outcome = "ran away / enemy fled"
             self.other += 1
         after = self.lead()
         b.update(outcome=outcome, after=after)
@@ -345,6 +654,16 @@ class Bot:
                  f"lead XP {b['lead']['exp']} -> {after['exp']} "
                  f"(+{after['exp'] - b['lead']['exp']}), Lv{b['lead']['level']} -> Lv{after['level']}")
         self.battle_info = None
+
+    def track_battle(self):
+        battle_now = bool(self.m[self.s["wIsInBattle"]])
+        if battle_now and not self.in_battle:
+            self.in_battle = True
+            self.begin_battle()
+        elif not battle_now and self.in_battle:
+            self.in_battle = False
+            self.end_battle()
+        self.track_lead()
 
     def track_lead(self):
         lv = self.m[self.s["wPartyMon1Level"]]
@@ -359,14 +678,7 @@ class Bot:
         rows = self.screen()
         state = self.classify(rows)
 
-        battle_now = bool(m[s["wIsInBattle"]])
-        if battle_now and not self.in_battle:
-            self.in_battle = True
-            self.begin_battle()
-        elif not battle_now and self.in_battle:
-            self.in_battle = False
-            self.end_battle()
-        self.track_lead()
+        self.track_battle()
 
         # timeouts: the same state with an unchanged screen for too long
         key = (state, tuple(rows))
@@ -403,12 +715,29 @@ class Bot:
     # ---------------------------------------------------------------- handlers
     def on_overworld(self, rows):
         m, s = self.m, self.s
+        if self.trip:
+            self.trip_step(rows)
+            return
+        if self.world and self.needs_heal():
+            self.start_trip()
+            return
         pos = (m[s["wXCoord"]], m[s["wYCoord"]])
         if self.wander_from is None:
             self.wander_from = pos
         if self.start_frame is None:
             self.start_frame = self.g.frames
-        self.grass_seen |= m[s["wTileMap"] + 9 * 20 + 8] == m[s["wGrassTile"]]
+        on_grass = m[s["wTileMap"] + 9 * 20 + 8] == m[s["wGrassTile"]]
+        self.grass_seen |= on_grass
+        if on_grass:
+            self.last_grass, self.offgrass = self.pos(), 0
+        elif self.last_grass and self.world and self.offgrass >= 3 and self.last_grass[0] in self.world.maps:
+            # wandered (or was walked, in MANUAL) off the grass: path back to the last grass tile
+            g = self.last_grass
+            self.log(f"off the grass -> walking back to {self.world.name(g[0])} ({g[1]},{g[2]})")
+            self.trip = {"phase": "to_grind", "grind": g, "plan": None, "blocked": {}, "fails": 0,
+                         "replans": 0, "start": self.g.frames, "warp_presses": 0, "talk": None}
+            self.offgrass = 0
+            return
         if (not self.grass_seen and not self.battles
                 and self.g.frames - self.start_frame > self.args.stall_seconds * 60):
             self.stop_reason = (f"never stood on tall grass in {self.args.stall_seconds}s of wandering: "
@@ -422,6 +751,8 @@ class Bot:
         if new != pos:
             self.blocked = 0
             self.progress_frame = self.g.frames
+            if m[s["wTileMap"] + 9 * 20 + 8] != m[s["wGrassTile"]]:
+                self.offgrass += 1
             # turn round if we left the grass (step back) or went far enough from the start
             grass = m[s["wTileMap"] + 9 * 20 + 8] == m[s["wGrassTile"]]
             dist = abs(new[1] - self.wander_from[1]) + abs(new[0] - self.wander_from[0])
@@ -456,6 +787,14 @@ class Bot:
 
     def on_battle_menu(self, rows):
         m, s = self.m, self.s
+        if self.trip and self.trip["phase"] == "to_pc":
+            if self.move_cursor_to_label(rows, "RUN"):
+                if self.trip.get("ran_in") != self.battles:
+                    self.trip["ran_in"] = self.battles
+                    self.runs += 1
+                    self.log("  on the way to the Pokemon Center: running")
+                self.press("a", after=20)
+            return
         hp, maxhp = u16(m, s["wBattleMonHP"]), u16(m, s["wBattleMonMaxHP"])
         heal = self.heal_item()
         want_heal = (heal is not None and hp and maxhp and hp <= maxhp * self.args.heal_below
@@ -604,6 +943,210 @@ class Bot:
         else:
             self.tick(10)          # A is harmless but not needed; B would cancel
 
+    # ---------------------------------------------------------------- Pokemon Center trips
+    def pos(self):
+        m, s = self.m, self.s
+        return m[s["wCurMap"]], m[s["wXCoord"]], m[s["wYCoord"]]
+
+    def needs_heal(self):
+        """No healthy party member has a damaging move with PP, or every healthy one is
+        at or below --heal-below HP with no healing item left in the bag."""
+        party = self.party()
+        alive = [i for i, p in enumerate(party) if p["hp"]]
+        if not alive:
+            return False                       # blacked out: handled elsewhere
+        knows_damaging = any(self.damaging(self.m[self.mon(i, "Moves") + k]) for i in alive for k in range(4))
+        if knows_damaging and not any(self.mon_has_damaging_pp(i) for i in alive):
+            self.trip_reason = "out of PP"         # (a party with no damaging move at all just STRUGGLEs)
+            return True
+        if self.heal_item() is None and all(party[i]["hp"] <= party[i]["maxhp"] * self.args.heal_below
+                                            for i in alive):
+            self.trip_reason = "low HP and no healing items"
+            return True
+        return False
+
+    def start_trip(self):
+        cur = self.pos()
+        if cur[0] not in self.world.maps:
+            self.stop_reason = f"{self.trip_reason}, and map ${cur[0]:02X} is not in the world model"
+            return
+        self.heal_trips += 1
+        self.trip = {"phase": "to_pc", "grind": cur, "plan": None, "blocked": {}, "fails": 0,
+                     "replans": 0, "start": self.g.frames, "warp_presses": 0, "talk": None}
+        self.log(f"{self.trip_reason} -> heading to a Pokemon Center (trip #{self.heal_trips}, "
+                 f"from {self.world.name(cur[0])} ({cur[1]},{cur[2]}))")
+
+    def trip_fail(self, why):
+        cur = self.pos()
+        self.stop_reason = (f"Pokemon Center trip failed ({self.trip['phase']}): {why} at "
+                            f"{self.world.name(cur[0])} ({cur[1]},{cur[2]})")
+
+    def sprite_obstacles(self):
+        """Map tiles occupied by the current map's NPC sprites (live RAM positions;
+        Yellow's following Pikachu, the last sprite slot, is not an obstacle)."""
+        m, s = self.m, self.s
+        mid = m[s["wCurMap"]]
+        n = m[s["wNumSprites"]]
+        out = set()
+        for i in range(1, min(n, 14) + 1):
+            if m[s["wSpriteStateData1"] + i * 16] == 0:
+                continue
+            y, x = m[s["wSpriteStateData2"] + i * 16 + 4] - 4, m[s["wSpriteStateData2"] + i * 16 + 5] - 4
+            out.add((mid, x, y))
+        return out
+
+    def trip_goal(self):
+        if self.trip["phase"] == "to_pc":
+            targets = self.world.pc_targets
+            return lambda st: targets.get(st[0]) == (st[1], st[2])
+        g = self.trip["grind"]
+        return lambda st: st[:3] == g
+
+    def replan(self):
+        t = self.trip
+        t["replans"] += 1
+        if t["replans"] > self.args.trip_replans:
+            self.trip_fail(f"gave up after {self.args.trip_replans} re-plans")
+            return None
+        m, s = self.m, self.s
+        start = self.pos() + (m[s["wLastMap"]],)
+        now = self.g.frames
+        t["blocked"] = {k: v for k, v in t["blocked"].items() if v > now}
+        blocked = set(t["blocked"]) | self.sprite_obstacles()
+        plan = self.world.path(start, self.trip_goal(), frozenset(blocked))
+        if plan is None and blocked:
+            plan = self.world.path(start, self.trip_goal())       # NPCs may move out of the way
+        if plan is None:
+            self.trip_fail("no walkable path " + ("to any Pokemon Center" if t["phase"] == "to_pc"
+                                                  else "back to the grind spot"))
+        t["plan"] = plan
+        return plan
+
+    def trip_step(self, rows):
+        t = self.trip
+        m, s = self.m, self.s
+        if self.g.frames - t["start"] > self.args.trip_limit * 60:
+            self.trip_fail(f"not done after --trip-limit {self.args.trip_limit}s of game time")
+            return
+        if t["phase"] == "talk":
+            self.nurse_step(rows)
+            return
+        if t["plan"] is None and self.replan() is None:
+            return
+        plan = t["plan"]
+        cur = self.pos()
+        if not plan:                                 # arrived
+            if t["phase"] == "to_pc":
+                self.log(f"  at the nurse in {self.world.name(cur[0])}: talking")
+                t.update(phase="talk", talk={"start": self.g.frames, "farewell": False, "turned": False,
+                                             "presses": 0})
+            else:
+                self.log(f"back to grinding at {self.world.name(cur[0])} ({cur[1]},{cur[2]})")
+                self.trip = None
+                self.wander_from, self.blocked = None, 0
+            return
+        step, nxt = plan[0]
+        if step["kind"] == "warp" and cur == step["target"]:
+            # standing on a warp that needs a push towards the map edge
+            t["warp_presses"] += 1
+            if t["warp_presses"] > 4:
+                t["blocked"][step["target"]] = self.g.frames + 600
+                t["warp_presses"] = 0
+                t["plan"] = None
+                return
+            self.p.button(step["exit"], 10)
+            self.tick(30)
+            self.after_move(cur, step, nxt)
+            return
+        self.p.button(step["dir"], 8)
+        self.tick(40 if step["kind"] == "ledge" else 24)
+        self.after_move(cur, step, nxt)
+
+    def after_move(self, cur, step, nxt):
+        t = self.trip
+        if self.m[self.s["wIsInBattle"]]:
+            t["plan"] = None                         # re-plan after the battle
+            return
+        new = self.pos()
+        if new[0] != cur[0]:
+            self.tick(90)                            # let the warp / map transition settle
+            new = self.pos()
+        if new == nxt[:3]:
+            t["plan"].pop(0)
+            t["fails"] = t["warp_presses"] = 0
+            self.progress_frame = self.g.frames
+            if step["kind"] == "warp":
+                self.log(f"  entered {self.world.name(new[0])}")
+                t["plan"] = None                     # re-plan inside: positions after a warp can differ
+            elif step["kind"] == "conn":
+                self.log(f"  crossed into {self.world.name(new[0])}")
+            return
+        if step["kind"] == "warp" and new == step["target"]:
+            self.progress_frame = self.g.frames      # on the warp tile; push through next step
+            return
+        if new == cur:
+            t["fails"] += 1
+            if t["fails"] >= 2:                      # first press may only turn the player
+                self.press("b", after=20)            # in case a text box is open
+                t["blocked"][step["target"]] = self.g.frames + 600
+                t["fails"] = 0
+                t["plan"] = None
+            return
+        t["plan"] = None                             # somewhere unexpected (auto-step out of a door, ...)
+        self.progress_frame = self.g.frames
+
+    def nurse_step(self, rows):
+        tk = self.trip["talk"]
+        text = "\n".join(rows)
+        if self.g.frames - tk["start"] > 90 * 60:
+            self.trip_fail("the nurse dialogue did not finish")
+            return
+        if not tk["turned"]:
+            self.p.button("up", 4)                   # face the nurse across the counter
+            self.tick(20)
+            tk["turned"] = True
+            return
+        if "again" in text and "see" in text:
+            tk["farewell"] = True
+        cursor = self.cursor_pos(rows)
+        if cursor and ("HEAL" in text or "YES" in text):
+            if self.move_cursor_to_label(rows, "HEAL" if "HEAL" in text else "YES"):
+                self.press("a", after=30)
+            return
+        talking = any(ch.isalpha() for r in rows[12:] for ch in r)
+        if tk["farewell"] and not talking:
+            party = self.party()
+            healed = all(p["hp"] == p["maxhp"] for p in party) and (
+                self.trip_reason != "out of PP" or any(self.mon_has_damaging_pp(i) for i in range(len(party))))
+            if not healed:
+                self.trip_fail("talked to the nurse but the party was not healed")
+                return
+            self.log("  healed: " + ", ".join(f"{self.mon_name(i)} {p['hp']}/{p['maxhp']} HP"
+                                              for i, p in enumerate(party)) + "; PP restored")
+            if self.needs_heal():
+                self.stop_reason = "healed, but the party still cannot fight (no damaging moves at all?)"
+                return
+            self.trip.update(phase="to_grind", plan=None, start=self.g.frames, replans=0)
+            g = self.trip["grind"]
+            self.log(f"  heading back to {self.world.name(g[0])} ({g[1]},{g[2]})")
+            return
+        if not talking and not tk["farewell"]:
+            if tk["presses"] >= 6:
+                self.trip_fail("the nurse does not answer (not facing her?)")
+                return
+            tk["presses"] += 1
+            self.press("a", after=40)                # start (or continue) the conversation
+            return
+        if tk["farewell"]:
+            if self.static_frames >= 3:
+                self.press("b", after=20)            # close the last box; A would talk to her again
+            else:
+                self.tick(8)
+        elif self.static_frames >= 3:
+            self.press("a", after=10)
+        else:
+            self.tick(8)
+
     def on_blacked_out(self, rows):
         if self.in_battle:
             self.in_battle = False
@@ -623,6 +1166,15 @@ class Bot:
                 if self.args.max_minutes and time.time() - t0 >= self.args.max_minutes * 60:
                     self.stop_reason = f"reached --max-minutes {self.args.max_minutes}"
                     break
+                if self.on_tick:
+                    self.on_tick(self)
+                if self.hotkey and self.hotkey.poll():
+                    self.toggle_manual()
+                if self.manual:                       # the player is driving: only keep the books
+                    self.tick(1)
+                    self.track_battle()
+                    self.progress_frame = self.g.frames
+                    continue
                 self.step()
                 # evolution bookkeeping from the game's own result text
                 if self.evolving_seen:
@@ -713,6 +1265,7 @@ class Bot:
                  f"  lead XP            {self.lead_start['exp']} -> {end['exp']} (+{end['exp'] - self.lead_start['exp']})",
                  f"  heals used         {self.heals}",
                  f"  switches           {self.switches}",
+                 f"  Pokemon Center     {self.heal_trips} trip(s), ran from {self.runs} battle(s) on the way",
                  f"  STRUGGLE uses      {self.struggles}",
                  f"  moves declined     {self.declined_moves}",
                  f"  evolutions         {self.evolutions} (cancelled {self.cancelled_evos})",
@@ -726,6 +1279,35 @@ class Bot:
 # ---------------------------------------------------------------------------
 # test state (same placement harness as tools/verify_statics.py)
 # ---------------------------------------------------------------------------
+
+class Hotkey:
+    """Counts presses of one key in the PyBoy SDL2 window. PyBoy drains the SDL event
+    queue itself, so this uses an SDL event watch, which sees every event as it is
+    queued (real key presses and SDL_PushEvent alike) without consuming it."""
+
+    def __init__(self, key="m"):
+        import sdl2
+        self.sdl2, self.presses = sdl2, 0
+        self.key = sdl2.SDL_GetKeyFromName(key.encode())
+
+        def watch(_userdata, event):
+            e = event.contents
+            if e.type == sdl2.SDL_KEYDOWN and e.key.keysym.sym == self.key and not e.key.repeat:
+                self.presses += 1
+            return 0
+        self._watch = sdl2.SDL_EventFilter(watch)       # keep a reference: SDL holds a raw pointer
+        sdl2.SDL_AddEventWatch(self._watch, None)
+
+    def poll(self):
+        """True if the key was pressed an odd number of times since the last poll."""
+        n, self.presses = self.presses, 0
+        return n % 2 == 1
+
+    def set_title(self, text):
+        win = self.sdl2.SDL_GetWindowFromID(1)
+        if win:
+            self.sdl2.SDL_SetWindowTitle(win, text.encode())
+
 
 def load_tables():
     consts = {"species": ve.load_consts("constants/pokemon_constants.asm"),
@@ -777,6 +1359,8 @@ def make_test_state(args, sym, consts):
     grass_tile = int(next(l for l in ve.lines("data/tilesets/tileset_headers.asm")
                           if l.startswith("tileset Overworld")).split(",")[4].strip().lstrip("$"), 16)
     sx, sy, w = grass_spot("ROUTE_1", "maps/Route1.blk", grass_tile)
+    if args.test_pos:
+        sx, sy = (int(v) for v in args.test_pos.split(","))
     view_ptr = sym["wOverworldMap"] + 7 + w + (w + 6) * (sy >> 1) + (sx >> 1)
 
     rom_bytes = open(args.rom, "rb").read()
@@ -873,7 +1457,8 @@ def main():
     ap.add_argument("--rom", default=os.path.join(ROOT, "pokeyellow.gbc"))
     ap.add_argument("--sym", default=None, help="defaults to <rom>.sym")
     ap.add_argument("--state", help="PyBoy save state to start from (party in hand, standing in/near grass)")
-    ap.add_argument("--speed", type=int, default=0, help="emulation speed: 0 = unlimited (default), 1 = real time")
+    ap.add_argument("--speed", type=int, default=0,
+                    help="emulation speed: 0 = unlimited (default), 1 = real time, 2 = double, ...")
     vis = ap.add_mutually_exclusive_group()
     vis.add_argument("--window", action="store_true", help="show an SDL2 window")
     vis.add_argument("--headless", action="store_true", help="no window (default)")
@@ -887,6 +1472,12 @@ def main():
                     help="give up after this much emulated time without screen progress (default 120)")
     ap.add_argument("--battle-limit", type=int, default=600,
                     help="stop if one battle lasts longer than this many seconds of game time (default 600)")
+    ap.add_argument("--no-pc-heal", dest="pc_heal", action="store_false",
+                    help="do not walk to a Pokemon Center when out of PP / HP (default: do)")
+    ap.add_argument("--trip-limit", type=int, default=900,
+                    help="give up a Pokemon Center trip leg after this many seconds of game time (default 900)")
+    ap.add_argument("--trip-replans", type=int, default=80,
+                    help="give up a trip leg after this many re-plans (blocked steps, battles; default 80)")
     ap.add_argument("--screenshot", help="save the final screen to this PNG")
     ap.add_argument("--save-state", metavar="OUT",
                     help="at the end, write a PyBoy save state to OUT (load it in PyBoy with X to keep the "
@@ -902,6 +1493,8 @@ def main():
                     help="SPECIES:LEVEL[:HP%%[:PP]],... for --make-test-state (XP one below the next "
                          "level; PP = one value for every move or four slash-separated, e.g. 0/0/2/0)")
     ap.add_argument("--test-bag", default="POTION:3", help="ITEM:QTY,... for --make-test-state")
+    ap.add_argument("--test-pos", metavar="X,Y", help="ROUTE 1 grass tile for --make-test-state "
+                    "(default: the first grass tile from the north)")
     args = ap.parse_args()
     if args.in_game_save and not args.ram_out:
         ap.error("--in-game-save needs --ram-out OUT (the battery file to write; nothing is written by default)")
@@ -936,6 +1529,11 @@ def main():
             pyboy.load_state(io.BytesIO(f.read()))
         pyboy.tick(2, args.window)
         bot = Bot(pyboy, sym, consts, args, log=lambda x: print(x, flush=True))
+        if args.window:
+            bot.hotkey = Hotkey("m")
+            bot.hotkey.set_title(bot.title())
+            print("window: press M to toggle AUTO / MANUAL (in MANUAL you play with PyBoy's keys: arrows, "
+                  "A = a, B = s, START = Enter; speed drops to real time)", flush=True)
         if not bot.party():
             sys.exit("the state has no party: catch or inject a Pokemon first")
         print(f"autoplay: {'window' if args.window else 'headless'}, speed {args.speed or 'unlimited'}, "
