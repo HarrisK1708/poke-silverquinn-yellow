@@ -176,7 +176,7 @@ _ShallWeHealYourPokemonText::
 	done
 
 _NeedYourPokemonText::
-	text "OK. We'll need"
+	text "OK. We'll feed"
 	line "your #MON."
 	done
 
