@@ -3,8 +3,8 @@ _PokemonText::
 	done
 
 _PokemartGreetingText::
-	text "Hi there!"
-	next "May I help you?"
+	text "Welcome to BORK N"
+	next "CHEW! Need treats?"
 	done
 
 _PokemonFaintedText::
@@ -27,7 +27,8 @@ _RepelWoreOffText::
 	done
 
 _PokemartBuyingGreetingText::
-	text "Take your time."
+	text "Sniff around,"
+	line "take your time!"
 	done
 
 _PokemartTellBuyPriceText::
@@ -41,7 +42,9 @@ _PokemartTellBuyPriceText::
 
 _PokemartBoughtItemText::
 	text "Here you are!"
-	line "Thank you!"
+
+	para "Follow us on IG,"
+	line "search borknchew!"
 	prompt
 
 _PokemartNotEnoughMoneyText::
@@ -77,12 +80,12 @@ _PokemartUnsellableItemText::
 	prompt
 
 _PokemartThankYouText::
-	text "Thank you!"
+	text "Thanks, woof!"
 	done
 
 _PokemartAnythingElseText::
-	text "Is there anything"
-	line "else I can do?"
+	text "Anything else"
+	line "for your #MON?"
 	done
 
 _LearnedMove1Text::
