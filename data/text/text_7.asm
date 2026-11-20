@@ -161,17 +161,18 @@ _HMCantDeleteText::
 	prompt
 
 _PokemonCenterWelcomeText::
-	text "Welcome to our"
-	line "#MON CENTER!"
+	text "Welcome to BADAN"
+	line "GIZI NASIONAL!"
 
-	para "We heal your"
-	line "#MON back to"
-	cont "perfect health!"
+	para "We feed your"
+	line "#MON with"
+	cont "Makanan Bergizi"
+	cont "Gratis!"
 	prompt
 
 _ShallWeHealYourPokemonText::
-	text "Shall we heal your"
-	line "#MON?"
+	text "Shall we feed your"
+	line "#MON with MBG?"
 	done
 
 _NeedYourPokemonText::
@@ -181,13 +182,14 @@ _NeedYourPokemonText::
 
 _PokemonFightingFitText::
 	text "Thank you!"
-	line "Your #MON are"
-	cont "fighting fit!"
+	line "Your #MON like"
+	cont "the MBG so much!"
 	prompt
 
 _PokemonCenterFarewellText::
 	text "We hope to see"
-	line "you again!"
+	line "you again,"
+	cont "Salam dua periode!"
 	done
 
 _LooksContentText::
