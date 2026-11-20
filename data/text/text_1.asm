@@ -53,8 +53,10 @@ _MartSignText::
 	done
 
 _PokeCenterSignText::
-	text "Heal Your #MON!"
-	line "#MON CENTER"
+	text "Makanan Bergizi"
+	line "Gratis"
+
+	para "BGN CENTER"
 	done
 
 _FoundItemText::
