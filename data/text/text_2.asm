@@ -142,8 +142,7 @@ _DexRatingText::
 _GymStatueText1::
 	text_ram wGymCityName
 	text_start
-	line "#MON GYM"
-	cont "LEADER: @"
+	line "LEADER: @"
 	text_ram wGymLeaderName
 	text_start
 
@@ -154,8 +153,7 @@ _GymStatueText1::
 _GymStatueText2::
 	text_ram wGymCityName
 	text_start
-	line "#MON GYM"
-	cont "LEADER: @"
+	line "LEADER: @"
 	text_ram wGymLeaderName
 	text_start
 

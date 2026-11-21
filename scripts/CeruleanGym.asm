@@ -17,10 +17,10 @@ CeruleanGym_Script:
 	jp LoadGymLeaderAndCityName
 
 .CityName:
-	db "CERULEAN CITY@"
+	db "GYM MPR@"
 
 .LeaderName:
-	db "MISTY@"
+	db "BU KOST@"
 
 CeruleanGymResetScripts:
 	xor a ; SCRIPT_CERULEANGYM_DEFAULT
