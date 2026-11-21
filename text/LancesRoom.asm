@@ -2,9 +2,9 @@ _LancesRoomLanceBeforeBattleText::
 	text "Ah! I heard about"
 	line "you, <PLAYER>!"
 
-	para "I lead the ELITE"
-	line "FOUR! You can"
-	cont "call me LANCE the"
+	para "I lead the EMPAT"
+	line "NAGA! You can"
+	cont "call me OPUNG the"
 	cont "dragon trainer!"
 
 	para "You know that"
@@ -55,8 +55,8 @@ _LancesRoomLanceAfterBattleText::
 	cont "His name is..."
 
 	para "<RIVAL>!"
-	line "He beat the ELITE"
-	cont "FOUR before you!"
+	line "He beat the EMPAT"
+	cont "NAGA before you!"
 
 	para "He is the real"
 	line "#MON LEAGUE"

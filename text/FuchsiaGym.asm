@@ -1,5 +1,6 @@
 _FuchsiaGymKogaBeforeBattleText::
-	text "KOGA: Fwahahaha!"
+	text "PAK KETOK:"
+	line "Fwahahaha!"
 
 	para "A mere child like"
 	line "you dares to"
@@ -110,8 +111,8 @@ _FuchsiaGymRocker2EndBattleText::
 _FuchsiaGymRocker2AfterBattleText::
 	text "I will keep on"
 	line "training under"
-	cont "KOGA, my ninja"
-	cont "master!"
+	cont "PAK KETOK, my"
+	cont "ninja master!"
 	done
 
 _FuchsiaGymRocker3BattleText::
@@ -157,7 +158,8 @@ _FuchsiaGymRocker4AfterBattleText::
 _FuchsiaGymRocker5BattleText::
 	text "I also study the"
 	line "way of the ninja"
-	cont "with master KOGA!"
+	cont "with master"
+	cont "PAK KETOK!"
 
 	para "Ninja have a long"
 	line "history of using"
@@ -174,9 +176,9 @@ _FuchsiaGymRocker5AfterBattleText::
 	done
 
 _FuchsiaGymRocker6BattleText::
-	text "Master KOGA comes"
-	line "from a long line"
-	cont "of ninjas!"
+	text "Master PAK KETOK"
+	line "comes from a long"
+	cont "line of ninjas!"
 
 	para "What did you"
 	line "descend from?"
@@ -205,9 +207,9 @@ _FuchsiaGymGymGuideChampInMakingText::
 	line "riddled with"
 	cont "invisible walls!"
 
-	para "KOGA might appear"
-	line "close, but he's"
-	cont "blocked off!"
+	para "PAK KETOK might"
+	line "appear close, but"
+	cont "he's blocked off!"
 
 	para "You have to find"
 	line "gaps in the walls"

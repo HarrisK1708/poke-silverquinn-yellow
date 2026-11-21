@@ -1,10 +1,10 @@
 _AgathaBeforeBattleText::
-	text "I am AGATHA of"
-	line "the ELITE FOUR!"
+	text "I am SANG RATU of"
+	line "the EMPAT NAGA!"
 
-	para "OAK's taken a lot"
-	line "of interest in"
-	cont "you, child!"
+	para "PRIA SOLO's taken"
+	line "a lot of interest"
+	cont "in you, child!"
 
 	para "That old duff was"
 	line "once tough and"

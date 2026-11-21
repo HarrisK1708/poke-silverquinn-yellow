@@ -9,7 +9,7 @@ _DexCompletionText::
 	text_decimal hDexRatingNumMonsOwned, 1, 3
 	text " #MON owned"
 
-	para "PROF.OAK's"
+	para "PRIA SOLO's"
 	line "Rating:"
 	prompt
 

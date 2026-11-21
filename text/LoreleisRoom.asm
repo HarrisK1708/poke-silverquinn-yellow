@@ -2,8 +2,8 @@ _LoreleisRoomLoreleiBeforeBattleText::
 	text "Welcome to"
 	line "#MON LEAGUE!"
 
-	para "I am LORELEI of"
-	line "the ELITE FOUR!"
+	para "I am BU KETUA of"
+	line "the EMPAT NAGA!"
 
 	para "No one can best"
 	line "me when it comes"

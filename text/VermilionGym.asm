@@ -79,7 +79,7 @@ _VermilionGymLTSurgeReceivedThunderBadgeText::
 
 _VermilionGymGentlemanBattleText::
 	text "When I was in the"
-	line "Army, LT.SURGE"
+	line "Army, PAK LPG"
 	cont "was my strict CO!"
 	done
 
@@ -92,7 +92,7 @@ _VermilionGymGentlemanAfterBattleText::
 	text "The door won't"
 	line "open?"
 
-	para "LT.SURGE always"
+	para "PAK LPG always"
 	line "was cautious!"
 	done
 
@@ -109,7 +109,7 @@ _VermilionGymSuperNerdEndBattleText::
 _VermilionGymSuperNerdAfterBattleText::
 	text "OK, I'll talk!"
 
-	para "LT.SURGE said he"
+	para "PAK LPG said he"
 	line "hid door switches"
 	cont "inside something!"
 	done
@@ -125,7 +125,7 @@ _VermilionGymSailorEndBattleText::
 	prompt
 
 _VermilionGymSailorAfterBattleText::
-	text "LT.SURGE set up"
+	text "PAK LPG set up"
 	line "double locks!"
 	cont "Here's a hint!"
 
@@ -139,7 +139,7 @@ _VermilionGymGymGuideChampInMakingText::
 	text "Yo! Champ in"
 	line "making!"
 
-	para "LT.SURGE has a"
+	para "PAK LPG has a"
 	line "nickname. People"
 	cont "refer to him as"
 	cont "the Lightning"
@@ -153,7 +153,7 @@ _VermilionGymGymGuideChampInMakingText::
 	cont "risk! Beware of"
 	cont "paralysis too!"
 
-	para "LT.SURGE is very"
+	para "PAK LPG is very"
 	line "cautious!"
 
 	para "You'll have to"

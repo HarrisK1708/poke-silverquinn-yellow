@@ -1,7 +1,7 @@
 _CinnabarGymBlainePreBattleText::
 	text "Hah!"
 
-	para "I am BLAINE! I"
+	para "I am PAK ASAP! I"
 	line "am the LEADER of"
 	cont "CINNABAR GYM!"
 
@@ -139,8 +139,9 @@ _CinnabarGymSuperNerd4AfterBattleText::
 	done
 
 _CinnabarGymSuperNerd5BattleText::
-	text "I know why BLAINE"
-	line "became a trainer!"
+	text "I know why"
+	line "PAK ASAP became"
+	cont "a trainer!"
 	done
 
 _CinnabarGymSuperNerd5EndBattleText::
@@ -148,13 +149,13 @@ _CinnabarGymSuperNerd5EndBattleText::
 	prompt
 
 _CinnabarGymSuperNerd5AfterBattleText::
-	text "BLAINE was lost"
+	text "PAK ASAP was lost"
 	line "in the mountains"
 	cont "when a fiery bird"
 	cont "#MON appeared."
 
 	para "Its light enabled"
-	line "BLAINE to find"
+	line "PAK ASAP to find"
 	cont "his way down!"
 	done
 
@@ -196,7 +197,7 @@ _CinnabarGymGymGuideChampInMakingText::
 	line "making!"
 
 	para "The hot-headed"
-	line "BLAINE is a fire"
+	line "PAK ASAP is a fire"
 	cont "#MON pro!"
 
 	para "Douse his spirits"
@@ -218,7 +219,7 @@ _CinnabarGymText_1::
 
 	para "You have to take a"
 	line "quiz if you want"
-	cont "to see BLAINE."
+	cont "to see PAK ASAP."
 
 	para "You don't have to"
 	line "fight us if you"

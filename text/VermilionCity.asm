@@ -158,8 +158,8 @@ _VermilionCityPokemonFanClubSignText::
 
 _VermilionCityGymSignText::
 	text "VERMILION CITY"
-	line "#MON GYM"
-	cont "LEADER: LT.SURGE"
+	line "GYM ESDM"
+	cont "LEADER: PAK LPG"
 
 	para "The Lightning "
 	line "American!"

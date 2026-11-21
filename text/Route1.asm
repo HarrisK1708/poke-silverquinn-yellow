@@ -39,12 +39,12 @@ _Route1Youngster2Text::
 	cont "from them."
 
 	para "You can get back"
-	line "to PALLET TOWN"
+	line "to SOLO"
 	cont "quicker that way."
 	done
 
 _Route1SignText::
 	text "ROUTE 1"
-	line "PALLET TOWN -"
+	line "SOLO -"
 	cont "VIRIDIAN CITY"
 	done

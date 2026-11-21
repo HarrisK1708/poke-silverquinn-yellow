@@ -102,8 +102,8 @@ _SaffronCityFightingDojoSignText::
 
 _SaffronCityGymSignText::
 	text "SAFFRON CITY"
-	line "#MON GYM"
-	cont "LEADER: SABRINA"
+	line "GYM KOMDIGI"
+	cont "LEADER: BU SINYAL"
 
 	para "The Master of"
 	line "Psychic #MON!"

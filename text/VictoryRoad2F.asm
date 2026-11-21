@@ -21,7 +21,7 @@ _VictoryRoad2FHikerAfterBattleText::
 _VictoryRoad2FSuperNerd1BattleText::
 	text "Ah, so you wish"
 	line "to challenge the"
-	cont "ELITE FOUR?"
+	cont "EMPAT NAGA?"
 	done
 
 _VictoryRoad2FSuperNerd1EndBattleText::
@@ -54,7 +54,7 @@ _VictoryRoad2FSuperNerd2BattleText::
 	text "If you can get"
 	line "through here, you"
 	cont "can go meet the"
-	cont "ELITE FOUR!"
+	cont "EMPAT NAGA!"
 	done
 
 _VictoryRoad2FSuperNerd2EndBattleText::

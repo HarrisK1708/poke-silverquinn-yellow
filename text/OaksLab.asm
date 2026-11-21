@@ -27,28 +27,31 @@ _OaksLabThatsAPokeball::
 	done
 
 _OaksLabOak1GoAheadItsYours::
-	text "OAK: Go ahead,"
-	line "it's yours!"
+	text "PRIA SOLO: Go"
+	line "ahead, it's yours!"
 	done
 
 _OaksLabOak1YourPokemonCanFightText::
-	text "OAK: If a wild"
-	line "#MON appears,"
-	cont "your #MON can"
-	cont "fight against it!"
+	text "PRIA SOLO: If a"
+	line "wild #MON"
+	cont "appears, your"
+	cont "#MON can fight"
+	cont "against it!"
 
 	para "Afterward, go on"
 	line "to the next town."
 	done
 
 _OaksLabOak1YouShouldTalkToIt::
-	text "OAK: You should"
-	line "talk to it and"
-	cont "see how it feels."
+	text "PRIA SOLO: You"
+	line "should talk to it"
+	cont "and see how it"
+	cont "feels."
 	done
 
 _OaksLabOak1DeliverParcelText::
-	text "OAK: Oh, <PLAYER>!"
+	text "PRIA SOLO: Oh,"
+	line "<PLAYER>!"
 
 	para "How is my old"
 	line "#MON?"
@@ -64,7 +67,7 @@ _OaksLabOak1DeliverParcelText::
 	line "something for me?"
 
 	para "<PLAYER> delivered"
-	line "OAK's PARCEL.@"
+	line "SOLO's PARCEL.@"
 	text_end
 
 _OaksLabOak1ParcelThanksText::
@@ -87,10 +90,10 @@ _OaksLabOak1PokemonAroundTheWorldText::
 	done
 
 _OaksLabOak1ReceivedPokeballsText::
-	text "OAK: You can't get"
-	line "detailed data on"
-	cont "#MON by just"
-	cont "seeing them."
+	text "PRIA SOLO: You"
+	line "can't get detailed"
+	cont "data on #MON by"
+	cont "just seeing them."
 
 	para "You must catch"
 	line "them! Use these"
@@ -122,8 +125,8 @@ _OaksLabGivePokeballsExplanationText::
 	done
 
 _OaksLabOak1ComeSeeMeSometimesText::
-	text "OAK: Come see me"
-	line "sometimes."
+	text "PRIA SOLO: Come"
+	line "see me sometimes."
 
 	para "I want to know how"
 	line "your #DEX is"
@@ -131,11 +134,11 @@ _OaksLabOak1ComeSeeMeSometimesText::
 	done
 
 _OaksLabOak1HowIsYourPokedexComingText::
-	text "OAK: Good to see "
-	line "you! How is your "
-	cont "#DEX coming? "
-	cont "Here, let me take"
-	cont "a look!"
+	text "PRIA SOLO: Good"
+	line "to see you! How"
+	cont "is your #DEX"
+	cont "coming? Here, let"
+	cont "me take a look!"
 	prompt
 
 _OaksLabPokedexText::
@@ -149,7 +152,7 @@ _OaksLabOak2Text::
 	done
 
 _OaksLabGirlText::
-	text "PROF.OAK is the"
+	text "PRIA SOLO is the"
 	line "authority on"
 	cont "#MON!"
 
@@ -165,9 +168,9 @@ _OaksLabRivalFedUpWithWaitingText::
 	done
 
 _OaksLabOakChooseMonText::
-	text "OAK: Hmm? <RIVAL>?"
-	line "Why are you here"
-	cont "already?"
+	text "PRIA SOLO: Hmm?"
+	line "<RIVAL>? Why are"
+	cont "you here already?"
 
 	para "I said for you to"
 	line "come by later..."
@@ -194,9 +197,10 @@ _OaksLabRivalWhatAboutMeText::
 	done
 
 _OaksLabOakBePatientText::
-	text "OAK: Be patient,"
-	line "<RIVAL>, I'll give"
-	cont "you one later."
+	text "PRIA SOLO: Be"
+	line "patient, <RIVAL>,"
+	cont "I'll give you one"
+	cont "later."
 	done
 
 _OaksLabRivalTakesText1::
@@ -211,8 +215,9 @@ _OaksLabRivalTakesText2::
 	text_end
 
 _OaksLabRivalTakesText3::
-	text "OAK: <RIVAL>! What"
-	line "are you doing?"
+	text "PRIA SOLO:"
+	line "<RIVAL>! What"
+	cont "are you doing?"
 	prompt
 
 _OaksLabRivalTakesText4::
@@ -221,10 +226,10 @@ _OaksLabRivalTakesText4::
 	prompt
 
 _OaksLabRivalTakesText5::
-	text "OAK: But, I... Oh,"
-	line "all right then."
-	cont "That #MON is"
-	cont "yours."
+	text "PRIA SOLO: But,"
+	line "I... Oh, all right"
+	cont "then. That #MON"
+	cont "is yours."
 
 	para "I was going to"
 	line "give you one"
@@ -235,8 +240,9 @@ _OaksLabRivalTakesText5::
 	done
 
 _OaksLabOakGivesText::
-	text "OAK: <PLAYER>, this"
-	line "is the #MON I"
+	text "PRIA SOLO:"
+	line "<PLAYER>, this is"
+	cont "the #MON I"
 	cont "caught earlier."
 
 	para "You can have it."
@@ -253,8 +259,8 @@ _OaksLabReceivedText::
 	text_end
 
 _OaksLabOakDontGoAwayYetText::
-	text "OAK: Hey! Don't go"
-	line "away yet!"
+	text "PRIA SOLO: Hey!"
+	line "Don't go away yet!"
 	done
 
 _OaksLabRivalIllTakeYouOnText::
@@ -290,12 +296,12 @@ _OaksLabRivalSmellYouLaterText::
 	done
 
 _OaksLabPikachuDislikesPokeballsText1::
-	text "OAK: What?"
+	text "PRIA SOLO: What?"
 	done
 
 _OaksLabPikachuDislikesPokeballsText2::
-	text "OAK: Would you"
-	line "look at that!"
+	text "PRIA SOLO: Would"
+	line "you look at that!"
 
 	para "It's odd, but it"
 	line "appears that your"
@@ -325,8 +331,9 @@ _OaksLabRivalMyPokemonHasGrownStrongerText::
 	done
 
 _OaksLabOakIHaveARequestText::
-	text "OAK: Ah, <RIVAL>,"
-	line "good timing!"
+	text "PRIA SOLO: Ah,"
+	line "<RIVAL>, good"
+	cont "timing!"
 
 	para "I needed to ask"
 	line "both of you to do"
@@ -348,12 +355,14 @@ _OaksLabOakMyInventionPokedexText::
 	done
 
 _OaksLabOakGotPokedexText::
-	text "OAK: <PLAYER> and"
-	line "<RIVAL>! Take"
+	text "PRIA SOLO:"
+	line "<PLAYER> and"
+	cont "<RIVAL>! Take"
 	cont "these with you!"
 
 	para "<PLAYER> got"
-	line "#DEX from OAK!@"
+	line "#DEX from"
+	cont "PRIA SOLO!@"
 	text_end
 
 _OaksLabOakThatWasMyDreamText::
@@ -399,5 +408,5 @@ _OaksLabRivalLeaveItAllToMeText::
 
 _OaksLabScientistText::
 	text "I study #MON as"
-	line "PROF.OAK's AIDE."
+	line "PRIA SOLO's AIDE."
 	done

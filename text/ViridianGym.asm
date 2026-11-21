@@ -14,7 +14,7 @@ _ViridianGymGiovanniPreBattleText::
 
 	para "Once more, you"
 	line "shall face"
-	cont "GIOVANNI, the"
+	cont "JENDERAL, the"
 	cont "greatest trainer!"
 	done
 
@@ -235,6 +235,6 @@ _ViridianGymGuidePreBattleText::
 
 _ViridianGymGuidePostBattleText::
 	text "Blow me away!"
-	line "GIOVANNI was the"
+	line "JENDERAL was the"
 	cont "GYM LEADER here?"
 	done

@@ -73,7 +73,7 @@ _NoMoreRoomForItemText::
 
 _OaksAideHiText::
 	text "Hi! Remember me?"
-	line "I'm PROF.OAK's"
+	line "I'm PRIA SOLO's"
 	cont "AIDE!"
 
 	para "If you caught @"

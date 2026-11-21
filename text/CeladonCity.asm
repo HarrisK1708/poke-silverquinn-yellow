@@ -94,8 +94,8 @@ _CeladonCitySignText::
 
 _CeladonCityGymSignText::
 	text "CELADON CITY"
-	line "#MON GYM"
-	cont "LEADER: ERIKA"
+	line "GYM BGN"
+	cont "LEADER: BU GIZI"
 
 	para "The Nature-Loving"
 	line "Princess!"

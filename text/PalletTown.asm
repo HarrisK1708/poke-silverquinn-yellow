@@ -1,24 +1,26 @@
 _PalletTownOakHeyWaitDontGoOutText::
-	text "OAK: Hey! Wait!"
-	line "Don't go out!@"
+	text "PRIA SOLO: Hey!"
+	line "Wait! Don't go"
+	cont "out!@"
 	text_end
 
 _PalletTownOakThatWasCloseText::
-	text "OAK: That was"
-	line "close!"
+	text "PRIA SOLO: That"
+	line "was close!"
 
 	para "Wild #MON live"
 	line "in tall grass!"
 	done
 
 _PalletTownOakWhewText::
-	text "OAK: Whew..."
+	text "PRIA SOLO: Whew..."
 	done
 
 _PalletTownOakComeWithMe::
-	text "OAK: A #MON can"
-	line "appear anytime in"
-	cont "tall grass."
+	text "PRIA SOLO: A"
+	line "#MON can appear"
+	cont "anytime in tall"
+	cont "grass."
 
 	para "You need your own"
 	line "#MON for your"
@@ -49,12 +51,12 @@ _PalletTownFisherText::
 	done
 
 _PalletTownOaksLabSignText::
-	text "OAK #MON"
+	text "PRIA SOLO #MON"
 	line "RESEARCH LAB"
 	done
 
 _PalletTownSignText::
-	text "PALLET TOWN"
+	text "SOLO"
 	line "Shades of your"
 	cont "journey await!"
 	done

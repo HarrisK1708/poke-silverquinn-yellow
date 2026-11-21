@@ -54,8 +54,8 @@ _FuchsiaCitySafariZoneSignText::
 
 _FuchsiaCityGymSignText::
 	text "FUCHSIA CITY"
-	line "#MON GYM"
-	cont "LEADER: KOGA"
+	line "GYM DPR"
+	cont "LEADER: PAK KETOK"
 
 	para "The Poisonous"
 	line "Ninja Master!"

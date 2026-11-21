@@ -82,12 +82,14 @@ _ChampionsRoomRivalAfterBattleText::
 	done
 
 _ChampionsRoomOakText::
-	text "OAK: <PLAYER>!"
+	text "PRIA SOLO:"
+	line "<PLAYER>!"
 	done
 
 _ChampionsRoomOakCongratulatesPlayerText::
-	text "OAK: So, you won!"
-	line "Congratulations!"
+	text "PRIA SOLO: So, you"
+	line "won!"
+	cont "Congratulations!"
 	cont "You're the new"
 	cont "#MON LEAGUE"
 	cont "champion!"
@@ -104,12 +106,13 @@ _ChampionsRoomOakCongratulatesPlayerText::
 	done
 
 _ChampionsRoomOakDisappointedWithRivalText::
-	text "OAK: <RIVAL>! I'm"
-	line "disappointed!"
+	text "PRIA SOLO:"
+	line "<RIVAL>! I'm"
+	cont "disappointed!"
 
 	para "I came when I"
 	line "heard you beat"
-	cont "the ELITE FOUR!"
+	cont "the EMPAT NAGA!"
 
 	para "But, when I got"
 	line "here, you had"
@@ -130,7 +133,8 @@ _ChampionsRoomOakDisappointedWithRivalText::
 	done
 
 _ChampionsRoomOakComeWithMeText::
-	text "OAK: <PLAYER>!"
+	text "PRIA SOLO:"
+	line "<PLAYER>!"
 
 	para "You understand"
 	line "that your victory"

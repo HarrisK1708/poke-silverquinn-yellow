@@ -47,12 +47,13 @@ _CeladonMansion3FGraphicArtistText5::
 
 _CeladonMansion3FWriterText::
 	text "I wrote the story!"
-	line "Isn't ERIKA cute?"
+	line "Isn't BU GIZI"
+	cont "cute?"
 
-	para "I like MISTY a"
+	para "I like BU KOST a"
 	line "lot too!"
 
-	para "Oh, and SABRINA,"
+	para "Oh, and BU SINYAL,"
 	line "I like her!"
 	done
 

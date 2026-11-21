@@ -196,7 +196,7 @@ _SilphCo7FRivalGoodLuckToYouText::
 	para "I'm going to the"
 	line "#MON LEAGUE"
 	cont "to boot out the"
-	cont "ELITE FOUR!"
+	cont "EMPAT NAGA!"
 
 	para "I'll become the"
 	line "world's most"

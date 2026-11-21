@@ -271,7 +271,7 @@ _CinnabarPokecenterGuyText::
 
 _SaffronCityPokecenterGuyText1::
 	text "It would be great"
-	line "if the ELITE FOUR"
+	line "if the EMPAT NAGA"
 	cont "came and stomped"
 	cont "TEAM ROCKET!"
 	done
@@ -472,7 +472,7 @@ _OakLabEmailText::
 	para "#MON LEAGUE HQ"
 	line "INDIGO PLATEAU"
 
-	para "PS: PROF.OAK,"
+	para "PS: PRIA SOLO,"
 	line "please visit us!"
 	cont "..."
 	done
@@ -588,7 +588,7 @@ _ViridianSchoolNotebookText4::
 	para "Do so to earn the"
 	line "right to face..."
 
-	para "The ELITE FOUR of"
+	para "The EMPAT NAGA of"
 	line "#MON LEAGUE!"
 	prompt
 

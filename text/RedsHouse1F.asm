@@ -4,7 +4,7 @@ _RedsHouse1FMomWakeUpText::
 	cont "home someday."
 	cont "It said so on TV."
 
-	para "PROF.OAK, next"
+	para "PRIA SOLO, next"
 	line "door, is looking"
 	cont "for you."
 	done

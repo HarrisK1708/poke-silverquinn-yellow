@@ -186,7 +186,7 @@ _ViridianCityTrainerTips2Text::
 
 _ViridianCityGymSignText::
 	text "VIRIDIAN CITY"
-	line "#MON GYM"
+	line "GYM ISTANA"
 	done
 
 _ViridianCityGymLockedText::

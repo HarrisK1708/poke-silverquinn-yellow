@@ -1,5 +1,5 @@
 _PewterGymBrockPreBattleText::
-	text "I'm BROCK!"
+	text "I'm PAK BERAS!"
 	line "I'm PEWTER's GYM"
 	cont "LEADER!"
 
@@ -111,7 +111,7 @@ _PewterGymCooltrainerMBattleText::
 
 	para "You're still light"
 	line "years from facing"
-	cont "BROCK!"
+	cont "PAK BERAS!"
 	done
 
 _PewterGymCooltrainerMEndBattleText::
@@ -125,7 +125,7 @@ _PewterGymCooltrainerMEndBattleText::
 _PewterGymCooltrainerMAfterBattleText::
 	text "You're pretty hot,"
 	line "but not as hot"
-	cont "as BROCK!"
+	cont "as PAK BERAS!"
 	done
 
 _PewterGymGuidePreAdviceText::
@@ -181,6 +181,7 @@ _PewterGymGuyPikachuText::
 
 	para "Electric attacks"
 	line "are harmless to"
-	cont "BROCK's ground-"
-	cont "type #MON."
+	cont "PAK BERAS's"
+	cont "ground-type"
+	cont "#MON."
 	done

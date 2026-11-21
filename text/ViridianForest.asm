@@ -123,7 +123,7 @@ _ViridianForestUseAntidoteSignText::
 _ViridianForestTrainerTips2Text::
 	text "TRAINER TIPS"
 
-	para "Contact PROF.OAK"
+	para "Contact PRIA SOLO"
 	line "via PC to get"
 	cont "your #DEX"
 	cont "evaluated!"

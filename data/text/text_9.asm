@@ -194,9 +194,10 @@ _MonCannotLearnMachineMoveText::
 	prompt
 
 _ItemUseNotTimeText::
-	text "OAK: <PLAYER>!"
-	line "This isn't the"
-	cont "time to use that! "
+	text "PRIA SOLO:"
+	line "<PLAYER>! This"
+	cont "isn't the time"
+	cont "to use that! "
 	prompt
 
 _ItemUseNotYoursToUseText::

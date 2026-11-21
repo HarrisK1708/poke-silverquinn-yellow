@@ -78,8 +78,9 @@ _SaffronGymGuideChampInMakingText::
 	text "Yo! Champ in"
 	line "making!"
 
-	para "SABRINA's #MON"
-	line "use psychic power"
+	para "BU SINYAL's"
+	line "#MON use"
+	cont "psychic power"
 	cont "instead of force!"
 
 	para "Fighting #MON"
@@ -101,9 +102,9 @@ _SaffronGymGuideBeatSabrinaText::
 	done
 
 _SaffronGymChanneler1BattleText::
-	text "SABRINA is younger"
-	line "than I, but I"
-	cont "respect her!"
+	text "BU SINYAL is"
+	line "younger than I,"
+	cont "but I respect her!"
 	done
 
 _SaffronGymChanneler1EndBattleText::
@@ -118,7 +119,7 @@ _SaffronGymChanneler1AfterBattleText::
 	cont "will wins!"
 
 	para "If you wish"
-	line "to beat SABRINA,"
+	line "to beat BU SINYAL,"
 	cont "focus on winning!"
 	done
 
@@ -169,9 +170,10 @@ _SaffronGymYoungster2EndBattleText::
 	prompt
 
 _SaffronGymYoungster2AfterBattleText::
-	text "SABRINA just wiped"
-	line "out the KARATE"
-	cont "MASTER next door!"
+	text "BU SINYAL just"
+	line "wiped out the"
+	cont "KARATE MASTER"
+	cont "next door!"
 	done
 
 _SaffronGymChanneler3BattleText::
@@ -192,9 +194,9 @@ _SaffronGymChanneler3AfterBattleText::
 	done
 
 _SaffronGymYoungster3BattleText::
-	text "SABRINA is young,"
-	line "but she's also"
-	cont "our LEADER!"
+	text "BU SINYAL is"
+	line "young, but she's"
+	cont "also our LEADER!"
 
 	para "You won't reach"
 	line "her easily!"
@@ -223,7 +225,7 @@ _SaffronGymYoungster4BattleText::
 	cont "its psychics!"
 
 	para "You want to see"
-	line "SABRINA!"
+	line "BU SINYAL!"
 	cont "I can tell!"
 	done
 

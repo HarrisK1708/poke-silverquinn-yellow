@@ -7,8 +7,9 @@ _CeladonGymErikaPreBattleText::
 	line "I must have dozed"
 	cont "off. Welcome."
 
-	para "My name is ERIKA."
-	line "I am the LEADER"
+	para "My name is"
+	line "BU GIZI."
+	cont "I am the LEADER"
 	cont "of CELADON GYM."
 
 	para "I teach the art of"
@@ -99,7 +100,7 @@ _CeladonGymEndBattleText2::
 
 _CeladonGymAfterBattleText2::
 	text "Bleaah!"
-	line "I hope ERIKA"
+	line "I hope BU GIZI"
 	cont "wipes you out!"
 	done
 
@@ -173,10 +174,10 @@ _CeladonGymEndBattleText6::
 	prompt
 
 _CeladonGymAfterBattleText6::
-	text "Our LEADER, ERIKA,"
-	line "might be quiet,"
-	cont "but she's also"
-	cont "very skilled!"
+	text "Our LEADER,"
+	line "BU GIZI, might be"
+	cont "quiet, but she's"
+	cont "also very skilled!"
 	done
 
 _CeladonGymBattleText7::
