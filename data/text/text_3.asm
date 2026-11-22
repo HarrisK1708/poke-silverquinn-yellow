@@ -176,7 +176,7 @@ _TurnedOnPC1Text::
 	prompt
 
 _AccessedBillsPCText::
-	text "Accessed BILL's"
+	text "Accessed RAVI's"
 	line "PC."
 
 	para "Accessed #MON"

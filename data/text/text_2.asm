@@ -181,7 +181,7 @@ _PewterCityPokecenterGuyText::
 	done
 
 _CeruleanPokecenterGuyText::
-	text "BILL has lots of"
+	text "RAVI has lots of"
 	line "#MON!"
 
 	para "He collects rare"
@@ -439,7 +439,7 @@ _BillsHouseInitiatedText::
 	text_end
 
 _BillsHousePokemonListText1::
-	text "BILL's favorite"
+	text "RAVI's favorite"
 	line "#MON list!"
 	prompt
 

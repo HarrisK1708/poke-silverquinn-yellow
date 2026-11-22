@@ -32,7 +32,7 @@ _CeruleanCityRivalIWentToBillsText::
 	text "<RIVAL>: Hey,"
 	line "guess what?"
 
-	para "I went to BILL's"
+	para "I went to RAVI's"
 	line "and got him to"
 	cont "show me his rare"
 	cont "#MON!"
@@ -41,7 +41,7 @@ _CeruleanCityRivalIWentToBillsText::
 	line "of pages to my"
 	cont "#DEX!"
 
-	para "After all, BILL's"
+	para "After all, RAVI's"
 	line "world famous as a"
 	cont "#MANIAC!"
 

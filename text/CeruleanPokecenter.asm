@@ -1,5 +1,5 @@
 _CeruleanPokecenterSuperNerdText::
-	text "That BILL!"
+	text "That RAVI!"
 
 	para "I heard that"
 	line "he'll do whatever"
@@ -9,14 +9,14 @@ _CeruleanPokecenterSuperNerdText::
 
 _CeruleanPokecenterGentlemanText::
 	text "Have you heard"
-	line "about BILL?"
+	line "about RAVI?"
 
 	para "Everyone calls"
 	line "him a #MANIAC!"
 
 	para "I think people"
 	line "are just jealous"
-	cont "of BILL, though."
+	cont "of RAVI, though."
 
 	para "Who wouldn't want"
 	line "to boast about"

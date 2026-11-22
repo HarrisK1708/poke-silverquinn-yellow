@@ -8,7 +8,7 @@ _BillsHouseBillImNotAPokemonText::
 	line "#MON..."
 	cont "...No I'm not!"
 
-	para "Call me BILL!"
+	para "Call me RAVI!"
 	line "I'm a true blue"
 	cont "#MANIAC! Hey!"
 	cont "What's with that"
@@ -43,7 +43,7 @@ _BillsHouseBillNoYouGottaHelpText::
 	prompt
 
 _BillsHouseBillThankYouText::
-	text "BILL: Yeehah!"
+	text "RAVI: Yeehah!"
 	line "Thanks, bud! I"
 	cont "owe you one!"
 
@@ -86,7 +86,7 @@ _BillsHouseBillWhyDontYouGoInsteadOfMeText::
 	done
 
 _BillsHouseBillCheckOutMyRarePokemonText::
-	text "BILL: Look, bud,"
+	text "RAVI: Look, bud,"
 	line "just check out"
 	cont "some of my rare"
 	cont "#MON on my PC!"
