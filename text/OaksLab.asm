@@ -408,5 +408,5 @@ _OaksLabRivalLeaveItAllToMeText::
 
 _OaksLabScientistText::
 	text "I study #MON as"
-	line "PRIA SOLO's AIDE."
+	line "GENG SOLO."
 	done

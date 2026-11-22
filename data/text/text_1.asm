@@ -73,8 +73,7 @@ _NoMoreRoomForItemText::
 
 _OaksAideHiText::
 	text "Hi! Remember me?"
-	line "I'm PRIA SOLO's"
-	cont "AIDE!"
+	line "I'm GENG SOLO!"
 
 	para "If you caught @"
 	text_decimal hOaksAideRequirement, 1, 3

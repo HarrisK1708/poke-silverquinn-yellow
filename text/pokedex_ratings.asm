@@ -24,7 +24,7 @@ _DexRatingText_Own10To19::
 	text "You're on the"
 	line "right track! "
 	cont "Get a FLASH HM"
-	cont "from my AIDE!"
+	cont "from GENG SOLO!"
 	done
 
 _DexRatingText_Own20To29::
@@ -38,12 +38,12 @@ _DexRatingText_Own30To39::
 	text "Good, you're"
 	line "trying hard!"
 	cont "Get an ITEMFINDER"
-	cont "from my AIDE!"
+	cont "from GENG SOLO!"
 	done
 
 _DexRatingText_Own40To49::
 	text "Looking good!"
-	line "Go find my AIDE"
+	line "Go find GENG SOLO"
 	cont "when you get 50!"
 	done
 
@@ -51,8 +51,8 @@ _DexRatingText_Own50To59::
 	text "You finally got at"
 	line "least 50 species!"
 	cont "Be sure to get"
-	cont "EXP.ALL from my"
-	cont "AIDE!"
+	cont "EXP.ALL from"
+	cont "GENG SOLO!"
 	done
 
 _DexRatingText_Own60To69::
