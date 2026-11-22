@@ -67,7 +67,7 @@ _OaksLabOak1DeliverParcelText::
 	line "something for me?"
 
 	para "<PLAYER> delivered"
-	line "SOLO's PARCEL.@"
+	line "SOLO's IJAZAH.@"
 	text_end
 
 _OaksLabOak1ParcelThanksText::

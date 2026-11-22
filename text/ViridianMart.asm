@@ -17,7 +17,7 @@ _ViridianMartClerkParcelQuestText::
 	cont "to him?"
 
 	para "<PLAYER> got"
-	line "SOLO's PARCEL!@"
+	line "SOLO's IJAZAH!@"
 	text_end
 
 _ViridianMartYoungsterText::
