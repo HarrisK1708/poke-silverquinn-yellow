@@ -1,6 +1,6 @@
 _CeruleanTrashedHouseFishingGuruTheyStoleATMText::
 	text "Those miserable"
-	line "ROCKETs!"
+	line "WANTIMPRES!"
 
 	para "Look what they"
 	line "did here!"
@@ -24,13 +24,13 @@ _CeruleanTrashedHouseFishingGuruWhatsLostIsLostText::
 	done
 
 _CeruleanTrashedHouseGirlText::
-	text "TEAM ROCKET must"
+	text "WANTIMPRES must"
 	line "be trying to DIG"
 	cont "their way into no"
 	cont "good!"
 	done
 
 _CeruleanTrashedHouseWallHoleText::
-	text "TEAM ROCKET left"
+	text "WANTIMPRES left"
 	line "a way out!"
 	done

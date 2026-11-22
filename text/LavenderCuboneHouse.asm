@@ -4,14 +4,15 @@ _LavenderCuboneHouseCuboneText::
 
 _LavenderCuboneHouseBrunetteGirlPoorCubonesMotherText::
 	text "I hate those"
-	line "horrible ROCKETs!"
+	line "horrible"
+	cont "WANTIMPRES!"
 
 	para "That poor CUBONE's"
 	line "mother..."
 
 	para "It was killed"
 	line "trying to escape"
-	cont "from TEAM ROCKET!"
+	cont "from WANTIMPRES!"
 	done
 
 _LavenderCuboneHouseBrunetteGirlGhostIsGoneText::

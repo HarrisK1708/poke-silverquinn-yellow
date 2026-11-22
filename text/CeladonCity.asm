@@ -82,8 +82,8 @@ _CeladonCityRocket1Text::
 	done
 
 _CeladonCityRocket2Text::
-	text "Keep out of TEAM"
-	line "ROCKET's way!"
+	text "Keep out of"
+	line "WANTIMPRES's way!"
 	done
 
 _CeladonCitySignText::
@@ -132,8 +132,9 @@ _CeladonCityPrizeExchangeSignText::
 	done
 
 _CeladonCityGameCornerSignText::
-	text "ROCKET GAME CORNER"
-	line "The playground"
+	text "WANTIMPRES"
+	line "GAME CORNER"
+	cont "The playground"
 	cont "for grownups!"
 	done
 

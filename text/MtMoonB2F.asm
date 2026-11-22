@@ -4,7 +4,7 @@ _MtMoonJessieJamesText1::
 
 _MtMoonJessieJamesText2::
 	text "That fossil is"
-	line "TEAM ROCKET's!"
+	line "WANTIMPRES's!"
 
 	para "Surrender now, or "
 	line "prepare to fight!"
@@ -16,7 +16,7 @@ _MtMoonJessieJamesText3::
 	prompt
 
 _MtMoonJessieJamesText4::
-	text "TEAM ROCKET, blast"
+	text "WANTIMPRES, blast"
 	line "off at the speed"
 	cont "of light!@"
 	text_end
@@ -79,7 +79,7 @@ _MtMoonB2FSuperNerdThenThisIsMineText::
 	text_end
 
 _MtMoonB2FRocket2BattleText::
-	text "We, TEAM ROCKET,"
+	text "We, WANTIMPRES,"
 	line "are #MON"
 	cont "gangsters!"
 	done

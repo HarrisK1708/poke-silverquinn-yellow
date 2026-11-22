@@ -271,11 +271,11 @@ _SaffronCityPokecenterGuyText1::
 	text "It would be great"
 	line "if the EMPAT NAGA"
 	cont "came and stomped"
-	cont "TEAM ROCKET!"
+	cont "WANTIMPRES!"
 	done
 
 _SaffronCityPokecenterGuyText2::
-	text "TEAM ROCKET took"
+	text "WANTIMPRES took"
 	line "off! We can go"
 	cont "out safely again!"
 	cont "That's great!"

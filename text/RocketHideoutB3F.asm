@@ -1,6 +1,6 @@
 _RocketHideoutB3FRocket1BattleText::
 	text "Stop meddling in"
-	line "TEAM ROCKET's"
+	line "WANTIMPRES's"
 	cont "affairs!"
 	done
 

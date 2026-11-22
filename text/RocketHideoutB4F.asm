@@ -18,9 +18,10 @@ _RocketHideoutJessieJamesText3::
 	prompt
 
 _RocketHideoutJessieJamesText4::
-	text "Looks like TEAM"
-	line "ROCKET's blasting"
-	cont "off again!@"
+	text "Looks like"
+	line "WANTIMPRES's"
+	cont "blasting off"
+	cont "again!@"
 	text_end
 
 _RocketHideoutB4FGiovanniImpressedYouGotHereText::

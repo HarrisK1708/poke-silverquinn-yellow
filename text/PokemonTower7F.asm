@@ -19,9 +19,10 @@ _PokemonTowerJessieJamesText3::
 	prompt
 
 _PokemonTowerJessieJamesText4::
-	text "Looks like TEAM"
-	line "ROCKET's blasting"
-	cont "off again!@"
+	text "Looks like"
+	line "WANTIMPRES's"
+	cont "blasting off"
+	cont "again!@"
 	text_end
 
 _PokemonTower7FMrFujiRescueText::

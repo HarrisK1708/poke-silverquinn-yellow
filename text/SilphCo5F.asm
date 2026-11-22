@@ -1,12 +1,12 @@
 _SilphCo5FSilphWorkerMThatsYouRightText::
-	text "TEAM ROCKET is"
+	text "WANTIMPRES is"
 	line "in an uproar over"
 	cont "some intruder."
 	cont "That's you right?"
 	done
 
 _SilphCo5FSilphWorkerMYoureOurHeroText::
-	text "TEAM ROCKET took"
+	text "WANTIMPRES took"
 	line "off! You're our"
 	cont "hero! Thank you!"
 	done
@@ -23,7 +23,7 @@ _SilphCo5FRocket1EndBattleText::
 _SilphCo5FRocket1AfterBattleText::
 	text "It's not smart"
 	line "to pick a fight"
-	cont "with TEAM ROCKET!"
+	cont "with WANTIMPRES!"
 	done
 
 _SilphCo5FScientistBattleText::
@@ -62,7 +62,7 @@ _SilphCo5FRockerAfterBattleText::
 	done
 
 _SilphCo5FRocket2BattleText::
-	text "Show TEAM ROCKET"
+	text "Show WANTIMPRES"
 	line "a little respect!"
 	done
 

@@ -127,13 +127,14 @@ _CeruleanCityGuardText::
 	line "here were robbed."
 
 	para "We're positive"
-	line "that TEAM ROCKET"
+	line "that WANTIMPRES"
 	cont "is behind this"
 	cont "terrible deed."
 
 	para "Even our POLICE"
 	line "FORCE has trouble"
-	cont "with the ROCKETs!"
+	cont "with the"
+	cont "WANTIMPRES!"
 	done
 
 _CeruleanCityCooltrainerF1ElectrodeUseSonicboomText::

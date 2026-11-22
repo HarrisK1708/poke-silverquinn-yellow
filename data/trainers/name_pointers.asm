@@ -70,6 +70,6 @@ TrainerNamePointers:
 .ProfOakName:       db "PRIA SOLO@"
 .ChiefName:         db "CHIEF@"
 .ScientistName:     db "SCIENTIST@"
-.RocketName:        db "ROCKET@"
+.RocketName:        db "WANTIMPRES@"
 .CooltrainerMName:  db "COOLTRAINER♂@"
 .CooltrainerFName:  db "COOLTRAINER♀@"

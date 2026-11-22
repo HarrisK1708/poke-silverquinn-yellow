@@ -4,12 +4,12 @@ _SilphCo4FSilphWorkerMImHidingText::
 	done
 
 _SilphCo4FSilphWorkerMTeamRocketIsGoneText::
-	text "Huh? TEAM ROCKET"
+	text "Huh? WANTIMPRES"
 	line "is gone?"
 	done
 
 _SilphCo4FRocket1BattleText::
-	text "TEAM ROCKET has"
+	text "WANTIMPRES has"
 	line "taken command of"
 	cont "SILPH CO.!"
 	done

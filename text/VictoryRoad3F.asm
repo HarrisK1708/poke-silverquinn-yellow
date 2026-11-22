@@ -10,7 +10,7 @@ _VictoryRoad3FCooltrainerM1EndBattleText::
 
 _VictoryRoad3FCooltrainerM1AfterBattleText::
 	text "You beat JENDERAL"
-	line "of TEAM ROCKET?"
+	line "of WANTIMPRES?"
 	done
 
 _VictoryRoad3FCooltrainerF1BattleText::

@@ -9,7 +9,7 @@ _UndergroundPathRoute7CopyUnusedGirlText::
 	done
 
 _UndergroundPathRoute7CopyUnusedTeamRocketHadAHideoutText::
-	text "TEAM ROCKET had a"
+	text "WANTIMPRES had a"
 	line "secret hideout in"
 	cont "CELADON CITY?"
 	done

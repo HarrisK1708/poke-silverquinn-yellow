@@ -15,7 +15,7 @@ _SaffronCityRocket3Text::
 
 _SaffronCityRocket4Text::
 	text "SAFFRON belongs"
-	line "to TEAM ROCKET!"
+	line "to WANTIMPRES!"
 	done
 
 _SaffronCityRocket5Text::
@@ -36,13 +36,14 @@ _SaffronCityRocket7Text::
 	done
 
 _SaffronCityScientistText::
-	text "You beat TEAM"
-	line "ROCKET all alone?"
+	text "You beat"
+	line "WANTIMPRES all"
+	cont "alone?"
 	cont "That's amazing!"
 	done
 
 _SaffronCitySilphWorkerMText::
-	text "Yeah! TEAM ROCKET"
+	text "Yeah! WANTIMPRES"
 	line "is gone!"
 	cont "It's safe to go"
 	cont "out again!"
@@ -69,7 +70,7 @@ _SaffronCityPidgeotText::
 	text_end
 
 _SaffronCityRockerText::
-	text "I saw ROCKET"
+	text "I saw WANTIMPRES"
 	line "BOSS escaping"
 	cont "SILPH's building."
 	done

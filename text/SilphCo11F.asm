@@ -85,13 +85,13 @@ _SilphCo11FGiovanniYouRuinedOurPlansText::
 	line "You ruined our"
 	cont "plans for SILPH!"
 
-	para "But, TEAM ROCKET"
+	para "But, WANTIMPRES"
 	line "will never fall!"
 
 	para "<PLAYER>! Never"
 	line "forget that all"
 	cont "#MON exist"
-	cont "for TEAM ROCKET!"
+	cont "for WANTIMPRES!"
 
 	para "I must go, but I"
 	line "shall return!"

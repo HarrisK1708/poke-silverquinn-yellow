@@ -29,7 +29,7 @@ TrainerNames::
 	li "CHIEF"
 	li "SCIENTIST"
 	li "JENDERAL"
-	li "ROCKET"
+	li "WANTIMPRES"
 	li "COOLTRAINER♂"
 	li "COOLTRAINER♀"
 	li "AJUDAN"

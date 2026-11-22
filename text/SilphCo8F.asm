@@ -42,7 +42,8 @@ _SilphCo8FScientistAfterBattleText::
 
 _SilphCo8FRocket2BattleText::
 	text "I am one of the 4"
-	line "ROCKET BROTHERS!"
+	line "WANTIMPRES"
+	cont "BROTHERS!"
 	done
 
 _SilphCo8FRocket2EndBattleText::
