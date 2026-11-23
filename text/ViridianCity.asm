@@ -181,7 +181,7 @@ _ViridianCityTrainerTips2Text::
 	para "To replenish PP,"
 	line "rest your tired"
 	cont "#MON at a"
-	cont "#MON CENTER!"
+	cont "BGN CENTER!"
 	done
 
 _ViridianCityGymSignText::

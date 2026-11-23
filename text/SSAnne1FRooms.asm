@@ -72,7 +72,7 @@ _SSAnne1FRoomsCooltrainerFAfterBattleText::
 
 	para "I demand that you"
 	line "heal them at a"
-	cont "#MON CENTER!"
+	cont "BGN CENTER!"
 	done
 
 _SSAnne1FRoomsGirl1Text::

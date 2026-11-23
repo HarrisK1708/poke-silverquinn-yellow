@@ -42,5 +42,5 @@ TwoOptionMenuStrings:
 	next "CANCEL@"
 
 .HealCancelMenu:
-	db   "HEAL"
+	db   "FEED"
 	next "CANCEL@"

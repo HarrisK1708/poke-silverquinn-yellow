@@ -163,7 +163,7 @@ _GymStatueText2::
 	done
 
 _ViridianCityPokecenterGuyText::
-	text "#MON CENTERs"
+	text "BGN CENTERs"
 	line "heal your tired,"
 	cont "hurt or fainted"
 	cont "#MON!"

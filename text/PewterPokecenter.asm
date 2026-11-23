@@ -9,7 +9,7 @@ _PewterPokecenterGentlemanText::
 	done
 
 _PewterPokecenterText3::
-	text "#MON CENTERS"
+	text "BGN CENTERS"
 	line "are wonderful!"
 
 	para "They heal #MON"
